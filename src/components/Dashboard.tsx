@@ -1,6 +1,7 @@
+
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { 
   Users, 
   BarChart3, 
@@ -39,9 +40,15 @@ const navigation = [
 ]
 
 export default function Dashboard() {
-  const [students] = useState<Student[]>(() => generateMockStudents(100))
+  const [students, setStudents] = useState<Student[]>([])
   const [filters, setFilters] = useState<GenerativeVoiceSearchOutput>({})
   const [searchQuery, setSearchQuery] = useState("")
+
+  useEffect(() => {
+    // Generate mock students only on the client to avoid hydration mismatch
+    // (Math.random in generateMockStudents produces different values on server vs client)
+    setStudents(generateMockStudents(100))
+  }, [])
 
   const filteredStudents = useMemo(() => {
     return students.filter(student => {
