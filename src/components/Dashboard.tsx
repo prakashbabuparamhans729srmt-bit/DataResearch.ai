@@ -16,11 +16,13 @@ import {
   Zap,
   TrendingUp,
   Trophy,
-  Loader2
+  Loader2,
+  Calendar,
+  Download
 } from "lucide-react"
 import { generateMockStudents, type Student } from "@/lib/mock-data"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
@@ -35,22 +37,22 @@ import { collection } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
 
 const navigation = [
-  { name: 'Dashboard', icon: LayoutDashboard, current: true },
-  { name: 'Students', icon: Users, current: false },
-  { name: 'Analysis', icon: BarChart3, current: false },
-  { name: 'Reports', icon: FileText, current: false },
-  { name: 'Settings', icon: Settings, current: false },
+  { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard },
+  { id: 'students', name: 'Students', icon: Users },
+  { id: 'analysis', name: 'Analysis', icon: BarChart3 },
+  { id: 'reports', name: 'Reports', icon: FileText },
+  { id: 'settings', name: 'Settings', icon: Settings },
 ]
 
 export default function Dashboard() {
   const [mounted, setMounted] = useState(false)
   const { firestore: db, auth, user: currentUser, isUserLoading: loadingAuth } = useFirebase();
 
+  const [activeTab, setActiveTab] = useState('dashboard')
   const [filters, setFilters] = useState<GenerativeVoiceSearchOutput>({})
   const [searchQuery, setSearchQuery] = useState("")
   const { toast } = useToast()
 
-  // Stabilize the students collection query
   const studentsQuery = useMemoFirebase(() => {
     if (!db) return null;
     return collection(db, "students");
@@ -58,7 +60,6 @@ export default function Dashboard() {
 
   const { data: dbStudents, isLoading: isDbLoading } = useCollection<Student>(studentsQuery);
 
-  // Initialize data if empty and auth is ready
   useEffect(() => {
     if (!loadingAuth && !currentUser && auth) {
       initiateAnonymousSignIn(auth);
@@ -107,6 +108,185 @@ export default function Dashboard() {
 
   if (!mounted) return null;
 
+  const renderContent = () => {
+    if (isDbLoading) {
+      return (
+        <div className="flex flex-col items-center justify-center py-40">
+          <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
+          <p className="text-muted-foreground animate-pulse">Initializing System...</p>
+        </div>
+      )
+    }
+
+    switch (activeTab) {
+      case 'dashboard':
+        return (
+          <div className="space-y-6 animate-in fade-in duration-500">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                { label: 'Attendance', value: `${stats.attendance}%`, icon: Zap, color: 'text-indigo-400', bg: 'bg-indigo-400/10' },
+                { label: 'Avg Score', value: stats.avgScore, icon: TrendingUp, color: 'text-emerald-400', bg: 'bg-emerald-400/10' },
+                { label: 'Completion', value: `${stats.completion}%`, icon: Target, color: 'text-purple-400', bg: 'bg-purple-400/10' },
+                { label: 'Top Rank', value: '#3', icon: Trophy, color: 'text-amber-400', bg: 'bg-amber-400/10' },
+              ].map((stat) => (
+                <Card key={stat.label} className="glass-card hover:translate-y-[-2px] transition-transform duration-300">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className={`p-2 rounded-lg ${stat.bg}`}>
+                        <stat.icon className={`h-5 w-5 ${stat.color}`} />
+                      </div>
+                      <MoreVertical className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <div className="mt-4">
+                      <p className="text-3xl font-bold">{stat.value}</p>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mt-1">{stat.label}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <PerformanceTrend />
+              <Card className="glass-card">
+                <CardHeader>
+                  <CardTitle className="text-sm font-medium">Top Performers</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {topPerformers.length > 0 ? topPerformers.map((student) => (
+                    <div key={student.id} className="flex items-center justify-between group cursor-pointer">
+                      <div className="flex items-center gap-3">
+                        <StudentAvatar name={student.name} className="h-9 w-9" />
+                        <div>
+                          <p className="text-sm font-medium group-hover:text-primary transition-colors">{student.name}</p>
+                          <p className="text-[10px] text-muted-foreground">{student.tags[0]}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-bold">{student.averageScorePercentage}%</p>
+                      </div>
+                    </div>
+                  )) : (
+                    <p className="text-center text-xs text-muted-foreground py-10">No records found. Seed data to start.</p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+            <AIInsights students={filteredStudents.slice(0, 20)} />
+            <StudentTable students={filteredStudents.slice(0, 5)} />
+          </div>
+        )
+      case 'students':
+        return (
+          <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
+            <StudentTable students={filteredStudents} />
+          </div>
+        )
+      case 'analysis':
+        return (
+          <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <PerformanceTrend />
+              <Card className="glass-card">
+                <CardHeader>
+                  <CardTitle>Subject Performance Breakdown</CardTitle>
+                  <CardDescription>Average scores per academic department</CardDescription>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  {['Science', 'Arts', 'Commerce'].map(tag => (
+                    <div key={tag} className="mb-4 space-y-2">
+                      <div className="flex justify-between text-sm font-medium">
+                        <span>{tag}</span>
+                        <span>{Math.floor(Math.random() * 30 + 70)}%</span>
+                      </div>
+                      <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-primary" 
+                          style={{ width: `${Math.floor(Math.random() * 30 + 70)}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
+            <AIInsights students={filteredStudents} />
+          </div>
+        )
+      case 'reports':
+        return (
+          <div className="grid gap-6 animate-in slide-in-from-bottom-4 duration-500">
+             <Card className="glass-card">
+               <CardHeader className="flex flex-row items-center justify-between">
+                 <div>
+                   <CardTitle>Academic Reports</CardTitle>
+                   <CardDescription>Generate and download comprehensive research summaries</CardDescription>
+                 </div>
+                 <FileText className="h-8 w-8 text-primary/40" />
+               </CardHeader>
+               <CardContent className="space-y-4">
+                 {[
+                   { name: 'Monthly Performance Summary', date: 'Oct 2023', size: '2.4 MB' },
+                   { name: 'Attendance Correlation Study', date: 'Sep 2023', size: '1.8 MB' },
+                   { name: 'Student Growth Analysis', date: 'Aug 2023', size: '3.1 MB' },
+                 ].map((report, i) => (
+                   <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-colors border border-white/5">
+                     <div className="flex items-center gap-4">
+                        <div className="bg-primary/20 p-2 rounded-lg">
+                          <Download className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">{report.name}</p>
+                          <p className="text-[10px] text-muted-foreground">{report.date} • {report.size}</p>
+                        </div>
+                     </div>
+                     <Button variant="outline" size="sm">Download</Button>
+                   </div>
+                 ))}
+               </CardContent>
+             </Card>
+          </div>
+        )
+      case 'settings':
+        return (
+          <div className="max-w-2xl animate-in slide-in-from-bottom-4 duration-500">
+            <Card className="glass-card">
+              <CardHeader>
+                <CardTitle>Platform Settings</CardTitle>
+                <CardDescription>Manage your research preferences and profile</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Research Profile</p>
+                  <div className="p-4 rounded-xl bg-white/5 border border-white/5 flex items-center gap-4">
+                    <StudentAvatar name={currentUser?.displayName || "Dr. Smith"} className="h-12 w-12" />
+                    <div>
+                      <p className="text-sm font-bold">{currentUser?.displayName || "Dr. Smith"}</p>
+                      <p className="text-xs text-muted-foreground">{currentUser?.email || "researcher@dataresearch.ai"}</p>
+                    </div>
+                  </div>
+                </div>
+                <Separator className="bg-white/5" />
+                <div className="space-y-4">
+                  <p className="text-sm font-medium">Notifications</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Real-time alerts for low attendance</span>
+                    <Badge variant="outline">Enabled</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Weekly AI performance summary email</span>
+                    <Badge variant="outline">Enabled</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )
+      default:
+        return null
+    }
+  }
+
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="flex h-screen w-full bg-background overflow-hidden">
@@ -121,14 +301,15 @@ export default function Dashboard() {
           </SidebarHeader>
           <SidebarContent>
             <SidebarGroup>
-              <SidebarGroupLabel>Menu</SidebarGroupLabel>
+              <SidebarGroupLabel>Navigation</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   {navigation.map((item) => (
-                    <SidebarMenuItem key={item.name}>
+                    <SidebarMenuItem key={item.id}>
                       <SidebarMenuButton 
-                        isActive={item.current} 
-                        className={item.current ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}
+                        isActive={activeTab === item.id} 
+                        onClick={() => setActiveTab(item.id)}
+                        className={activeTab === item.id ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}
                       >
                         <item.icon className="h-4 w-4" />
                         <span>{item.name}</span>
@@ -163,24 +344,6 @@ export default function Dashboard() {
                       ))}
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <p className="text-[10px] uppercase font-bold text-muted-foreground">Gender</p>
-                    <div className="flex gap-1">
-                      {['Male', 'Female'].map(g => (
-                        <Badge 
-                          key={g} 
-                          variant={filters.gender === g ? "default" : "outline"}
-                          className="cursor-pointer text-[10px] hover:bg-primary/20"
-                          onClick={() => setFilters(prev => ({
-                            ...prev,
-                            gender: prev.gender === g ? undefined : g as any
-                          }))}
-                        >
-                          {g}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
                   <Button 
                     variant="ghost" 
                     size="sm" 
@@ -195,10 +358,10 @@ export default function Dashboard() {
           </SidebarContent>
           <SidebarFooter className="p-4 border-t border-white/5">
             <div className="flex items-center gap-3 p-2 rounded-xl bg-white/5">
-              <StudentAvatar name={currentUser?.isAnonymous ? "Guest Researcher" : (currentUser?.displayName || "Dr. Smith")} className="h-8 w-8" />
+              <StudentAvatar name={currentUser?.displayName || "Dr. Smith"} className="h-8 w-8" />
               <div className="flex flex-col">
-                <span className="text-xs font-medium">{currentUser?.isAnonymous ? "Guest" : (currentUser?.displayName || "Dr. Smith")}</span>
-                <span className="text-[10px] text-muted-foreground">{currentUser ? "Authenticated" : "Connecting..."}</span>
+                <span className="text-xs font-medium">{currentUser?.displayName || "Dr. Smith"}</span>
+                <span className="text-[10px] text-muted-foreground">Admin</span>
               </div>
             </div>
           </SidebarFooter>
@@ -208,7 +371,10 @@ export default function Dashboard() {
           <header className="h-16 glass-card border-b border-white/5 px-6 flex items-center justify-between sticky top-0 z-10 shrink-0">
             <div className="flex items-center gap-4 flex-1">
               <SidebarTrigger className="md:hidden" />
-              <VoiceSearch onResult={(res) => setFilters(res)} />
+              <VoiceSearch onResult={(res) => {
+                setFilters(res)
+                setActiveTab('students')
+              }} />
             </div>
             
             <div className="flex items-center gap-4">
@@ -229,92 +395,19 @@ export default function Dashboard() {
           <main className="flex-1 overflow-y-auto p-6 space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-bold tracking-tight">Real-Time Analytics</h2>
+                <h2 className="text-2xl font-bold tracking-tight capitalize">{activeTab} View</h2>
                 <p className="text-muted-foreground text-sm">
-                  {isDbLoading ? "Connecting to database..." : `Monitoring ${filteredStudents.length} students in real-time.`}
+                  {isDbLoading ? "Initializing data..." : `Managing ${filteredStudents.length} student records in real-time.`}
                 </p>
               </div>
               <div className="flex gap-2">
                 <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 px-3 py-1">
-                  {stats.activeCount} Active Now
+                  {stats.activeCount} Researchers Online
                 </Badge>
               </div>
             </div>
 
-            {isDbLoading ? (
-               <div className="flex items-center justify-center py-20">
-                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                 <span className="ml-3 text-muted-foreground">Loading analytics...</span>
-               </div>
-            ) : (
-              <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {[
-                    { label: 'Attendance', value: `${stats.attendance}%`, icon: Zap, color: 'text-indigo-400', bg: 'bg-indigo-400/10' },
-                    { label: 'Avg Score', value: stats.avgScore, icon: TrendingUp, color: 'text-emerald-400', bg: 'bg-emerald-400/10' },
-                    { label: 'Completion', value: `${stats.completion}%`, icon: Target, color: 'text-purple-400', bg: 'bg-purple-400/10' },
-                    { label: 'Top Rank', value: '#3', icon: Trophy, color: 'text-amber-400', bg: 'bg-amber-400/10' },
-                  ].map((stat) => (
-                    <Card key={stat.label} className="glass-card hover:translate-y-[-2px] transition-transform duration-300">
-                      <CardContent className="p-6">
-                        <div className="flex items-center justify-between">
-                          <div className={`p-2 rounded-lg ${stat.bg}`}>
-                            <stat.icon className={`h-5 w-5 ${stat.color}`} />
-                          </div>
-                          <MoreVertical className="h-4 w-4 text-muted-foreground" />
-                        </div>
-                        <div className="mt-4">
-                          <p className="text-3xl font-bold">{stat.value}</p>
-                          <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mt-1">{stat.label}</p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <PerformanceTrend />
-                  
-                  <Card className="glass-card">
-                    <CardHeader>
-                      <CardTitle className="text-sm font-medium">Top Performers</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {topPerformers.length > 0 ? topPerformers.map((student) => (
-                        <div key={student.id} className="flex items-center justify-between group cursor-pointer">
-                          <div className="flex items-center gap-3">
-                            <StudentAvatar name={student.name} className="h-9 w-9" />
-                            <div>
-                              <p className="text-sm font-medium group-hover:text-primary transition-colors">{student.name}</p>
-                              <p className="text-[10px] text-muted-foreground">{student.tags[0]}</p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-sm font-bold">{student.averageScorePercentage}%</p>
-                            <div className="flex gap-0.5">
-                              {[1, 2, 3, 4, 5].map(star => (
-                                <div key={star} className={`h-1.5 w-1.5 rounded-full ${star <= 4 ? 'bg-amber-400' : 'bg-white/10'}`} />
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      )) : (
-                        <p className="text-center text-xs text-muted-foreground py-10">No students available. Use "Seed Data" to populate.</p>
-                      )}
-                      {topPerformers.length > 0 && (
-                        <Button variant="ghost" size="sm" className="w-full text-xs mt-2 text-muted-foreground hover:text-primary">
-                          View All Rankings
-                        </Button>
-                      )}
-                    </CardContent>
-                  </Card>
-                </div>
-
-                <AIInsights students={filteredStudents.slice(0, 20)} />
-
-                <StudentTable students={filteredStudents} />
-              </>
-            )}
+            {renderContent()}
           </main>
         </SidebarInset>
       </div>
