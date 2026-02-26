@@ -1,0 +1,127 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * FIRESTORE SECURITY RULES - PROTOTYPING MODE
+     * 
+     * Core Philosophy: 
+     * This ruleset implements a Database Access Control (DBAC) model where system-wide 
+     * administrative privileges are granted based on the existence of a document in the 
+     * '/admin_users' collection. 
+     * 
+     * Data Structure:
+     * - /admin_users/{adminId}: Root collection for authorized administrators.
+     * - /students/{studentId}: Root collection for student profiles.
+     * - /academic_tags/{tagId}: Root collection for categorization metadata.
+     * - /students/{studentId}/performance_snapshots/{snapshotId}: Subcollection for historical data.
+     * - /students/{studentId}/activity_logs/{activityLogId}: Subcollection for event auditing.
+     * 
+     * Key Security Decisions:
+     * 1. Authorization Independence: Access to student data and their subcollections 
+     *    is verified by checking the user's admin status directly, avoiding expensive 
+     *    parent-document lookups.
+     * 2. Denormalization for Authorization: The system relies on the 'admin_users' 
+     *    collection as a source of truth for roles.
+     * 3. Relational Integrity: On creation, documents nested under specific IDs 
+     *    (like studentId) are required to match those IDs in their internal data.
+     * 4. Prototyping Flexibility: Data types and optional fields are not validated 
+     *    to allow for rapid development, focusing strictly on WHO can access WHAT.
+     */
+
+    // --- GLOBAL HELPER FUNCTIONS ---
+
+    /** @description Checks if the request is from an authenticated user. */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /** @description Checks if the authenticated user's UID matches the provided userId. */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /** @description Checks if the user exists in the admin_users collection. */
+    function isAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/admin_users/$(request.auth.uid));
+    }
+
+    /** @description Checks for admin status and document existence for destructive operations. */
+    function isExistingAdmin() {
+      return isAdmin() && resource != null;
+    }
+
+    // --- COLLECTION RULES ---
+
+    /**
+     * @description Rules for the admin_users collection. Allows users to create their own admin profile (Self-Creation) and allows existing admins to manage the list.
+     * @path /admin_users/{adminId}
+     * @allow (create) if the user is authenticated and the adminId matches their UID.
+     * @deny (create) if the UID does not match the document ID.
+     * @principle Self-creation for the root admin identity; owner-based management.
+     */
+    match /admin_users/{adminId} {
+      allow get: if isSignedIn();
+      allow list: if isAdmin();
+      allow create: if isOwner(adminId);
+      allow update: if isOwner(adminId) || isAdmin();
+      allow delete: if isAdmin() && resource != null;
+    }
+
+    /**
+     * @description Rules for the student collection. Only authorized admins can view or manage students.
+     * @path /students/{studentId}
+     * @allow (read/write) if the authenticated user is registered in the admin_users collection.
+     * @deny (all) if the user is not an admin.
+     * @principle Role-based access control (DBAC).
+     */
+    match /students/{studentId} {
+      allow get, list: if isAdmin();
+      allow create: if isAdmin() && request.resource.data.id == studentId;
+      allow update: if isExistingAdmin() && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingAdmin();
+    }
+
+    /**
+     * @description Rules for academic tags. Restricted to administrative users.
+     * @path /academic_tags/{tagId}
+     * @allow (read/write) if the requester is an admin.
+     * @deny (read/write) if the requester is not an admin.
+     * @principle Structural segregation of administrative metadata.
+     */
+    match /academic_tags/{tagId} {
+      allow get, list: if isAdmin();
+      allow create: if isAdmin() && request.resource.data.id == tagId;
+      allow update: if isExistingAdmin() && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingAdmin();
+    }
+
+    /**
+     * @description Rules for performance snapshots. Only admins can access snapshots linked to a student.
+     * @path /students/{studentId}/performance_snapshots/{snapshotId}
+     * @allow (create) if admin and studentId in data matches the path studentId.
+     * @deny (create) if relational integrity between path and data is violated.
+     * @principle Authorization Independence using path parameters.
+     */
+    match /students/{studentId}/performance_snapshots/{snapshotId} {
+      allow get, list: if isAdmin();
+      allow create: if isAdmin() && request.resource.data.studentId == studentId;
+      allow update: if isExistingAdmin() && request.resource.data.studentId == resource.data.studentId;
+      allow delete: if isExistingAdmin();
+    }
+
+    /**
+     * @description Rules for activity logs. Provides an audit trail accessible only to admins.
+     * @path /students/{studentId}/activity_logs/{activityLogId}
+     * @allow (list) if user is an admin, facilitating secure administrative streams.
+     * @deny (write) if the studentId in the document does not match the parent student record.
+     * @principle Path-based relational integrity validation.
+     */
+    match /students/{studentId}/activity_logs/{activityLogId} {
+      allow get, list: if isAdmin();
+      allow create: if isAdmin() && request.resource.data.studentId == studentId;
+      allow update: if isExistingAdmin() && request.resource.data.studentId == resource.data.studentId;
+      allow delete: if isExistingAdmin();
+    }
+  }
+}
