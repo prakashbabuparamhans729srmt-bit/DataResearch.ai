@@ -17,7 +17,9 @@ import {
   Loader2,
   Download,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  ShieldCheck,
+  Search
 } from "lucide-react"
 import { generateMockStudents, type Student } from "@/lib/mock-data"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
@@ -34,13 +36,14 @@ import { type GenerativeVoiceSearchOutput } from "@/ai/flows/generative-voice-se
 import { useCollection, useFirebase, useMemoFirebase, initiateAnonymousSignIn, setDocumentNonBlocking, useDoc } from "@/firebase"
 import { collection, doc } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
+import { cn } from "@/lib/utils"
 
 const navigation = [
-  { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard },
-  { id: 'students', name: 'Students', icon: Users },
-  { id: 'analysis', name: 'Analysis', icon: BarChart3 },
-  { id: 'reports', name: 'Reports', icon: FileText },
-  { id: 'settings', name: 'Settings', icon: Settings },
+  { id: 'dashboard', name: 'System Overview', icon: LayoutDashboard },
+  { id: 'students', name: 'Student Records', icon: Users },
+  { id: 'analysis', name: 'Intelligence Unit', icon: BarChart3 },
+  { id: 'reports', name: 'Archive Vault', icon: FileText },
+  { id: 'settings', name: 'Control Panel', icon: Settings },
 ]
 
 export default function Dashboard() {
@@ -93,11 +96,11 @@ export default function Dashboard() {
 
   const handleSeedData = async () => {
     if (!db || !currentUser || !adminProfile) {
-      toast({ variant: "destructive", title: "Wait...", description: "System still initializing permissions." });
+      toast({ variant: "destructive", title: "Access Denied", description: "Authorization system initializing." });
       return;
     }
     const mockData = generateMockStudents(20);
-    toast({ title: "Seeding data...", description: "Adding 20 mock students to Firestore" });
+    toast({ title: "Initializing Data Research", description: "Injecting 20 secure records into Firestore" });
     
     const studentsCol = collection(db, "students");
     mockData.forEach(student => {
@@ -139,14 +142,14 @@ export default function Dashboard() {
       return (
         <div className="flex flex-col items-center justify-center py-40 space-y-4">
           <div className="relative">
-            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            <Loader2 className="h-16 w-16 animate-spin text-primary" />
             <div className="absolute inset-0 flex items-center justify-center">
-              <Zap className="h-4 w-4 text-primary animate-pulse" />
+              <ShieldCheck className="h-6 w-6 text-primary neon-text" />
             </div>
           </div>
           <div className="text-center">
-            <p className="text-lg font-bold tracking-tight">Activating System</p>
-            <p className="text-sm text-muted-foreground">Verifying secure administrative access...</p>
+            <h3 className="text-xl font-bold tracking-widest text-primary neon-text uppercase">System Initializing</h3>
+            <p className="text-sm text-muted-foreground mt-1">Verifying secure administrative protocols...</p>
           </div>
         </div>
       )
@@ -155,25 +158,25 @@ export default function Dashboard() {
     switch (activeTab) {
       case 'dashboard':
         return (
-          <div className="space-y-6 animate-in fade-in duration-500">
+          <div className="space-y-6 animate-in fade-in duration-700">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {[
-                { label: 'Attendance', value: `${stats.attendance}%`, icon: Zap, color: 'text-indigo-400', bg: 'bg-indigo-400/10' },
-                { label: 'Avg Score', value: stats.avgScore, icon: TrendingUp, color: 'text-emerald-400', bg: 'bg-emerald-400/10' },
-                { label: 'Completion', value: `${stats.completion}%`, icon: Target, color: 'text-purple-400', bg: 'bg-purple-400/10' },
-                { label: 'Top Rank', value: '#3', icon: Trophy, color: 'text-amber-400', bg: 'bg-amber-400/10' },
+                { label: 'Attendance', value: `${stats.attendance}%`, icon: Zap, color: 'text-primary' },
+                { label: 'Avg Score', value: stats.avgScore, icon: TrendingUp, color: 'text-primary' },
+                { label: 'Completion', value: `${stats.completion}%`, icon: Target, color: 'text-primary' },
+                { label: 'Top Rank', value: '#3', icon: Trophy, color: 'text-primary' },
               ].map((stat) => (
-                <Card key={stat.label} className="glass-card hover:translate-y-[-2px] transition-transform duration-300">
+                <Card key={stat.label} className="glass-card hover:translate-y-[-4px] transition-all duration-300 group">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
-                      <div className={`p-2 rounded-lg ${stat.bg}`}>
-                        <stat.icon className={`h-5 w-5 ${stat.color}`} />
+                      <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                        <stat.icon className={cn("h-6 w-6", stat.color)} />
                       </div>
                       <MoreVertical className="h-4 w-4 text-muted-foreground" />
                     </div>
                     <div className="mt-4">
-                      <p className="text-3xl font-bold">{stat.value}</p>
-                      <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mt-1">{stat.label}</p>
+                      <p className="text-3xl font-bold tracking-tight text-primary neon-text">{stat.value}</p>
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-bold mt-1">{stat.label}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -184,27 +187,27 @@ export default function Dashboard() {
               <PerformanceTrend />
               <Card className="glass-card">
                 <CardHeader>
-                  <CardTitle className="text-sm font-medium">Top Performers</CardTitle>
+                  <CardTitle className="text-sm font-bold tracking-widest uppercase text-primary">Elite Performers</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-5">
                   {topPerformers.length > 0 ? topPerformers.map((student) => (
-                    <div key={student.id} className="flex items-center justify-between group cursor-pointer">
+                    <div key={student.id} className="flex items-center justify-between group cursor-pointer hover:bg-white/5 p-2 rounded-lg transition-colors">
                       <div className="flex items-center gap-3">
-                        <StudentAvatar name={student.name} className="h-9 w-9" />
+                        <StudentAvatar name={student.name} className="h-10 w-10 ring-1 ring-primary/30" />
                         <div>
-                          <p className="text-sm font-medium group-hover:text-primary transition-colors">{student.name}</p>
-                          <p className="text-[10px] text-muted-foreground">{student.tags[0]}</p>
+                          <p className="text-sm font-bold group-hover:text-primary transition-colors">{student.name}</p>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{student.tags[0]}</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-bold">{student.averageScorePercentage}%</p>
+                        <p className="text-sm font-bold text-primary">{student.averageScorePercentage}%</p>
                       </div>
                     </div>
                   )) : (
-                    <div className="py-10 text-center space-y-3">
-                      <AlertCircle className="h-8 w-8 text-muted-foreground mx-auto" />
-                      <p className="text-xs text-muted-foreground">No students in database.</p>
-                      <Button variant="outline" size="sm" onClick={handleSeedData}>Seed Data Now</Button>
+                    <div className="py-10 text-center space-y-4">
+                      <AlertCircle className="h-10 w-10 text-primary/40 mx-auto" />
+                      <p className="text-xs text-muted-foreground tracking-widest uppercase">Database Offline</p>
+                      <Button variant="outline" size="sm" onClick={handleSeedData} className="border-primary/50 text-primary hover:bg-primary/10">Restore Records</Button>
                     </div>
                   )}
                 </CardContent>
@@ -216,30 +219,30 @@ export default function Dashboard() {
         )
       case 'students':
         return (
-          <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
+          <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-700">
             <StudentTable students={filteredStudents} />
           </div>
         )
       case 'analysis':
         return (
-          <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
+          <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-700">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <PerformanceTrend />
               <Card className="glass-card">
                 <CardHeader>
-                  <CardTitle>Subject Performance Breakdown</CardTitle>
-                  <CardDescription>Average scores per academic department</CardDescription>
+                  <CardTitle className="text-primary tracking-widest uppercase">Intelligence breakdown</CardTitle>
+                  <CardDescription className="text-muted-foreground/60">Departmental efficiency analysis</CardDescription>
                 </CardHeader>
-                <CardContent className="pt-6">
+                <CardContent className="pt-6 space-y-6">
                   {['Science', 'Arts', 'Commerce'].map(tag => (
-                    <div key={tag} className="mb-4 space-y-2">
-                      <div className="flex justify-between text-sm font-medium">
-                        <span>{tag}</span>
-                        <span>{Math.floor(Math.random() * 30 + 70)}%</span>
+                    <div key={tag} className="space-y-2">
+                      <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
+                        <span>{tag} Faculty</span>
+                        <span className="text-primary">{Math.floor(Math.random() * 30 + 70)}%</span>
                       </div>
-                      <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                      <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden p-[1px] border border-white/10">
                         <div 
-                          className="h-full bg-primary" 
+                          className="h-full bg-primary neon-glow rounded-full" 
                           style={{ width: `${Math.floor(Math.random() * 30 + 70)}%` }}
                         />
                       </div>
@@ -253,32 +256,35 @@ export default function Dashboard() {
         )
       case 'reports':
         return (
-          <div className="grid gap-6 animate-in slide-in-from-bottom-4 duration-500">
+          <div className="grid gap-6 animate-in slide-in-from-bottom-4 duration-700">
              <Card className="glass-card">
                <CardHeader className="flex flex-row items-center justify-between">
                  <div>
-                   <CardTitle>Academic Reports</CardTitle>
-                   <CardDescription>Generate and download comprehensive research summaries</CardDescription>
+                   <CardTitle className="text-primary tracking-widest uppercase">Data Research Archive</CardTitle>
+                   <CardDescription className="text-muted-foreground/60">Encrypted academic summaries and datasets</CardDescription>
                  </div>
-                 <FileText className="h-8 w-8 text-primary/40" />
+                 <div className="bg-primary/10 p-3 rounded-xl">
+                   <FileText className="h-8 w-8 text-primary" />
+                 </div>
                </CardHeader>
-               <CardContent className="space-y-4">
+               <CardContent className="grid md:grid-cols-2 gap-4">
                  {[
-                   { name: 'Monthly Performance Summary', date: 'Oct 2023', size: '2.4 MB' },
-                   { name: 'Attendance Correlation Study', date: 'Sep 2023', size: '1.8 MB' },
-                   { name: 'Student Growth Analysis', date: 'Aug 2023', size: '3.1 MB' },
+                   { name: 'Monthly Performance Summary', date: 'Oct 2023', size: '2.4 MB', type: 'Intel' },
+                   { name: 'Attendance Correlation Study', date: 'Sep 2023', size: '1.8 MB', type: 'Research' },
+                   { name: 'Student Growth Analysis', date: 'Aug 2023', size: '3.1 MB', type: 'Internal' },
+                   { name: 'Global Benchmark Report', date: 'July 2023', size: '5.2 MB', type: 'External' },
                  ].map((report, i) => (
-                   <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-colors border border-white/5">
+                   <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-all border border-white/5 group">
                      <div className="flex items-center gap-4">
-                        <div className="bg-primary/20 p-2 rounded-lg">
+                        <div className="bg-primary/20 p-2 rounded-lg group-hover:scale-110 transition-transform">
                           <Download className="h-5 w-5 text-primary" />
                         </div>
                         <div>
-                          <p className="text-sm font-medium">{report.name}</p>
-                          <p className="text-[10px] text-muted-foreground">{report.date} • {report.size}</p>
+                          <p className="text-sm font-bold group-hover:text-primary transition-colors">{report.name}</p>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{report.date} • {report.size}</p>
                         </div>
                      </div>
-                     <Button variant="outline" size="sm">Download</Button>
+                     <Badge variant="outline" className="text-[9px] border-primary/20 text-primary uppercase">{report.type}</Badge>
                    </div>
                  ))}
                </CardContent>
@@ -287,34 +293,49 @@ export default function Dashboard() {
         )
       case 'settings':
         return (
-          <div className="max-w-2xl animate-in slide-in-from-bottom-4 duration-500">
-            <Card className="glass-card">
-              <CardHeader>
-                <CardTitle>Platform Settings</CardTitle>
-                <CardDescription>Manage your research preferences and profile</CardDescription>
+          <div className="max-w-3xl mx-auto animate-in slide-in-from-bottom-4 duration-700">
+            <Card className="glass-card overflow-hidden">
+              <div className="h-24 bg-primary/10 relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-transparent" />
+              </div>
+              <CardHeader className="relative pb-10">
+                <div className="absolute -top-12 left-6">
+                  <StudentAvatar name={currentUser?.displayName || "Research Admin"} className="h-24 w-24 ring-4 ring-background" />
+                </div>
+                <div className="pl-28">
+                  <CardTitle className="text-xl font-bold">{currentUser?.displayName || "Research Director"}</CardTitle>
+                  <CardDescription className="text-primary neon-text font-bold text-[10px] uppercase tracking-[0.2em]">{adminProfile ? 'Access Level: Omega' : 'Access Pending'}</CardDescription>
+                </div>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">Research Profile</p>
-                  <div className="p-4 rounded-xl bg-white/5 border border-white/5 flex items-center gap-4">
-                    <StudentAvatar name={currentUser?.displayName || "Research Admin"} className="h-12 w-12" />
-                    <div>
-                      <p className="text-sm font-bold">{currentUser?.displayName || "Research Admin"}</p>
-                      <p className="text-xs text-muted-foreground">{currentUser?.email || "researcher@dataresearch.ai"}</p>
+              <CardContent className="space-y-8">
+                <div className="grid md:grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary">Core Identity</h4>
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground">Admin UID</p>
+                      <p className="text-sm font-mono bg-white/5 p-2 rounded border border-white/5">{currentUser?.uid}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground">Contact Node</p>
+                      <p className="text-sm font-mono bg-white/5 p-2 rounded border border-white/5">{currentUser?.email || "admin@dataresearch.ai"}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary">System Preferences</h4>
+                    <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
+                      <span className="text-xs font-medium">Auto-Sync Records</span>
+                      <Badge className="bg-primary/20 text-primary border-primary/40">Active</Badge>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
+                      <span className="text-xs font-medium">Neural Insights</span>
+                      <Badge className="bg-primary/20 text-primary border-primary/40">Active</Badge>
                     </div>
                   </div>
                 </div>
                 <Separator className="bg-white/5" />
-                <div className="space-y-4">
-                  <p className="text-sm font-medium">Notifications</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Real-time alerts for low attendance</span>
-                    <Badge variant="outline">Enabled</Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Weekly AI performance summary email</span>
-                    <Badge variant="outline">Enabled</Badge>
-                  </div>
+                <div className="flex justify-end gap-3">
+                  <Button variant="outline" className="border-white/10 hover:bg-white/5">Export Logs</Button>
+                  <Button className="bg-primary text-primary-foreground hover:bg-primary/80">Save Configuration</Button>
                 </div>
               </CardContent>
             </Card>
@@ -327,19 +348,22 @@ export default function Dashboard() {
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="flex h-screen w-full bg-background overflow-hidden">
-        <Sidebar className="glass-card border-r border-white/5">
+      <div className="flex h-screen w-full bg-background overflow-hidden relative">
+        <Sidebar className="glass-card border-r border-white/5 shadow-none">
           <SidebarHeader className="p-6">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="bg-primary h-8 w-8 rounded-lg flex items-center justify-center shadow-lg shadow-primary/20">
-                <Target className="text-white h-5 w-5" />
+            <div className="flex items-center gap-3 mb-2">
+              <div className="bg-primary h-10 w-10 rounded-xl flex items-center justify-center shadow-lg shadow-primary/30 neon-glow">
+                <Target className="text-black h-6 w-6" />
               </div>
-              <h1 className="text-xl font-bold tracking-tight">DataResearch.ai</h1>
+              <div>
+                <h1 className="text-lg font-bold tracking-tighter leading-none">RESEACH.<span className="text-primary neon-text">AI</span></h1>
+                <p className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-bold">Data Research System</p>
+              </div>
             </div>
           </SidebarHeader>
           <SidebarContent>
             <SidebarGroup>
-              <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+              <SidebarGroupLabel className="text-[9px] uppercase tracking-[0.2em] font-bold text-primary/50 px-4 mb-2">System Modules</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   {navigation.map((item) => (
@@ -347,10 +371,15 @@ export default function Dashboard() {
                       <SidebarMenuButton 
                         isActive={activeTab === item.id} 
                         onClick={() => setActiveTab(item.id)}
-                        className={activeTab === item.id ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}
+                        className={cn(
+                          "transition-all duration-300 py-6 px-4",
+                          activeTab === item.id 
+                            ? "bg-primary/10 text-primary border-r-2 border-primary" 
+                            : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+                        )}
                       >
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.name}</span>
+                        <item.icon className={cn("h-5 w-5", activeTab === item.id && "neon-text")} />
+                        <span className="font-bold tracking-widest text-xs uppercase">{item.name}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ))}
@@ -358,96 +387,111 @@ export default function Dashboard() {
               </SidebarGroupContent>
             </SidebarGroup>
             
-            <SidebarGroup className="mt-4">
-              <SidebarGroupLabel>Quick Filters</SidebarGroupLabel>
+            <SidebarGroup className="mt-6">
+              <SidebarGroupLabel className="text-[9px] uppercase tracking-[0.2em] font-bold text-primary/50 px-4 mb-2">Departmental Filter</SidebarGroupLabel>
               <SidebarGroupContent>
-                <div className="px-2 space-y-4">
-                  <div className="space-y-2">
-                    <p className="text-[10px] uppercase font-bold text-muted-foreground">Department</p>
-                    <div className="flex flex-wrap gap-1">
-                      {['Science', 'Arts', 'Commerce'].map(tag => (
-                        <Badge 
-                          key={tag} 
-                          variant={filters.academicTags?.includes(tag) ? "default" : "outline"}
-                          className="cursor-pointer text-[10px] hover:bg-primary/20"
-                          onClick={() => setFilters(prev => ({
-                            ...prev,
-                            academicTags: prev.academicTags?.includes(tag) 
-                              ? prev.academicTags.filter(t => t !== tag) 
-                              : [...(prev.academicTags || []), tag]
-                          }))}
-                        >
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
+                <div className="px-4 space-y-4">
+                  <div className="flex flex-col gap-2">
+                    {['Science', 'Arts', 'Commerce'].map(tag => (
+                      <div 
+                        key={tag} 
+                        className={cn(
+                          "flex items-center justify-between p-2 rounded-lg cursor-pointer transition-all border",
+                          filters.academicTags?.includes(tag) 
+                            ? "bg-primary/10 border-primary/30 text-primary" 
+                            : "bg-white/5 border-transparent text-muted-foreground hover:bg-white/10"
+                        )}
+                        onClick={() => setFilters(prev => ({
+                          ...prev,
+                          academicTags: prev.academicTags?.includes(tag) 
+                            ? prev.academicTags.filter(t => t !== tag) 
+                            : [...(prev.academicTags || []), tag]
+                        }))}
+                      >
+                        <span className="text-[10px] font-bold uppercase tracking-widest">{tag}</span>
+                        {filters.academicTags?.includes(tag) && <CheckCircle2 className="h-3 w-3" />}
+                      </div>
+                    ))}
                   </div>
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className="w-full text-xs text-muted-foreground mt-4 h-8"
+                    className="w-full text-[9px] uppercase tracking-widest font-bold text-muted-foreground hover:text-primary transition-colors h-8"
                     onClick={() => setFilters({})}
                   >
-                    Clear All
+                    Reset Overrides
                   </Button>
                 </div>
               </SidebarGroupContent>
             </SidebarGroup>
           </SidebarContent>
-          <SidebarFooter className="p-4 border-t border-white/5">
-            <div className="flex items-center gap-3 p-2 rounded-xl bg-white/5">
-              <StudentAvatar name={currentUser?.displayName || "Research Admin"} className="h-8 w-8" />
-              <div className="flex flex-col">
-                <span className="text-xs font-medium">{currentUser?.displayName || "Research Admin"}</span>
-                <span className="text-[10px] text-muted-foreground">Admin Status: {adminProfile ? 'Verified' : 'Pending'}</span>
+          <SidebarFooter className="p-4 border-t border-white/5 bg-black/20">
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-primary/5 border border-primary/20">
+              <StudentAvatar name={currentUser?.displayName || "Research Admin"} className="h-10 w-10" />
+              <div className="flex flex-col overflow-hidden">
+                <span className="text-xs font-bold truncate">{currentUser?.displayName || "Research Lead"}</span>
+                <div className="flex items-center gap-1">
+                  <div className="h-1.5 w-1.5 rounded-full bg-primary neon-glow animate-pulse" />
+                  <span className="text-[8px] text-primary/80 uppercase tracking-widest font-bold">{adminProfile ? 'Status: Secure' : 'Syncing...'}</span>
+                </div>
               </div>
             </div>
           </SidebarFooter>
         </Sidebar>
 
         <SidebarInset className="flex flex-col flex-1 overflow-hidden">
-          <header className="h-16 glass-card border-b border-white/5 px-6 flex items-center justify-between sticky top-0 z-10 shrink-0">
-            <div className="flex items-center gap-4 flex-1">
+          <header className="h-20 glass-card border-b border-white/10 px-8 flex items-center justify-between sticky top-0 z-10 shrink-0">
+            <div className="flex items-center gap-6 flex-1">
               <SidebarTrigger className="md:hidden" />
-              <VoiceSearch onResult={(res) => {
-                setFilters(res)
-                setActiveTab('students')
-              }} />
+              <div className="flex items-center gap-3 w-full max-w-xl group">
+                <VoiceSearch onResult={(res) => {
+                  setFilters(res)
+                  setActiveTab('students')
+                }} />
+              </div>
             </div>
             
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" className="relative text-muted-foreground">
+            <div className="flex items-center gap-6">
+              <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5">
+                <ShieldCheck className="h-3 w-3 text-primary" />
+                <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-muted-foreground">Admin Mode Active</span>
+              </div>
+              <Button variant="ghost" size="icon" className="relative text-muted-foreground hover:text-primary transition-colors">
                 <Bell className="h-5 w-5" />
-                {stats.activeCount > 0 && <span className="absolute top-2 right-2 h-2 w-2 bg-primary rounded-full" />}
+                {stats.activeCount > 0 && <span className="absolute top-2 right-2 h-2 w-2 bg-primary rounded-full neon-glow" />}
               </Button>
               <Button 
                 onClick={handleSeedData}
                 disabled={!adminProfile}
-                className="gradient-border bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
+                className="bg-primary/10 text-primary border-primary/30 border hover:bg-primary/20 transition-all font-bold tracking-widest uppercase text-[10px] h-10 px-6 rounded-xl"
               >
                 <Upload className="h-4 w-4 mr-2" />
-                <span>Seed Data</span>
+                <span>Initialize Research</span>
               </Button>
             </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto p-6 space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold tracking-tight capitalize">{activeTab} View</h2>
-                <p className="text-muted-foreground text-sm">
-                  {isDbLoading ? "Initializing data..." : `Managing ${filteredStudents.length} student records in real-time.`}
+          <main className="flex-1 overflow-y-auto p-8 space-y-8 scroll-smooth">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+              <div className="space-y-1">
+                <h2 className="text-3xl font-black tracking-tighter uppercase text-white leading-none">
+                  {activeTab === 'dashboard' ? 'Operational Hub' : activeTab + ' Unit'}
+                </h2>
+                <p className="text-muted-foreground/60 text-xs font-medium tracking-widest uppercase">
+                  {isDbLoading ? "Decrypting stream..." : `Analyzing ${filteredStudents.length} active research nodes`}
                 </p>
               </div>
               <div className="flex gap-2">
-                <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 px-3 py-1 flex items-center gap-1">
-                  <CheckCircle2 className="h-3 w-3" />
-                  System Secure
-                </Badge>
+                <div className="bg-primary/10 text-primary border border-primary/20 px-4 py-2 rounded-xl flex items-center gap-2 group cursor-default transition-all hover:bg-primary/20">
+                  <CheckCircle2 className="h-4 w-4" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest">Protocol Integrity: 100%</span>
+                </div>
               </div>
             </div>
 
-            {renderContent()}
+            <div className="relative">
+              {renderContent()}
+            </div>
           </main>
         </SidebarInset>
       </div>

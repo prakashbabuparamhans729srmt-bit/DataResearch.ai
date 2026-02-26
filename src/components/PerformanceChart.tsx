@@ -13,52 +13,61 @@ const data = [
 
 export function PerformanceTrend() {
   return (
-    <Card className="glass-card col-span-1 lg:col-span-2">
+    <Card className="glass-card col-span-1 lg:col-span-2 overflow-hidden">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium">Performance Trend (Jan - May)</CardTitle>
+        <CardTitle className="text-sm font-bold tracking-widest uppercase text-primary">Neural Performance Vector</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[300px] w-full">
+        <div className="h-[300px] w-full pt-4">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
               <XAxis 
                 dataKey="month" 
-                stroke="#888888" 
-                fontSize={12} 
+                stroke="#666" 
+                fontSize={10} 
                 tickLine={false} 
                 axisLine={false} 
+                tick={{ fill: '#666', fontWeight: 'bold' }}
               />
               <YAxis 
-                stroke="#888888" 
-                fontSize={12} 
+                stroke="#666" 
+                fontSize={10} 
                 tickLine={false} 
                 axisLine={false} 
                 tickFormatter={(value) => `${value}%`}
+                tick={{ fill: '#666', fontWeight: 'bold' }}
               />
               <Tooltip 
                 contentStyle={{ 
-                  backgroundColor: '#1E293B', 
-                  border: '1px solid #ffffff20',
-                  borderRadius: '8px',
-                  color: '#fff' 
+                  backgroundColor: '#070707', 
+                  border: '1px solid #07F1D644',
+                  borderRadius: '12px',
+                  color: '#fff',
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  textTransform: 'uppercase',
+                  letterSpacing: '1px'
                 }}
               />
               <Line 
                 type="monotone" 
                 dataKey="score" 
-                stroke="#6366F1" 
+                stroke="#07F1D6" 
                 strokeWidth={3} 
-                dot={{ r: 4, fill: '#6366F1' }} 
-                activeDot={{ r: 6, fill: '#6366F1', stroke: '#fff', strokeWidth: 2 }}
+                dot={{ r: 4, fill: '#07F1D6', strokeWidth: 0 }} 
+                activeDot={{ r: 6, fill: '#07F1D6', stroke: '#fff', strokeWidth: 2 }}
+                animationDuration={2000}
               />
               <Line 
                 type="monotone" 
                 dataKey="attendance" 
-                stroke="#10B981" 
-                strokeWidth={3} 
-                dot={{ r: 4, fill: '#10B981' }} 
-                activeDot={{ r: 6, fill: '#10B981', stroke: '#fff', strokeWidth: 2 }}
+                stroke="#FFFFFF" 
+                strokeWidth={2} 
+                strokeDasharray="5 5"
+                dot={{ r: 3, fill: '#FFFFFF', strokeWidth: 0 }} 
+                activeDot={{ r: 5, fill: '#FFFFFF', stroke: '#07F1D6', strokeWidth: 2 }}
+                animationDuration={2500}
               />
             </LineChart>
           </ResponsiveContainer>
