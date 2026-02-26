@@ -7,17 +7,14 @@ import {
   FileText, 
   Settings, 
   Upload, 
-  Filter, 
   MoreVertical,
   Bell,
-  Search,
   LayoutDashboard,
   Target,
   Zap,
   TrendingUp,
   Trophy,
   Loader2,
-  Calendar,
   Download,
   CheckCircle2,
   AlertCircle
@@ -84,7 +81,6 @@ export default function Dashboard() {
 
   // 4. Only attempt query when we have a user AND they are confirmed as an admin in Firestore
   const studentsQuery = useMemoFirebase(() => {
-    // Crucially wait for adminProfile to be truthy before firing the list request
     if (!db || !currentUser || !adminProfile) return null;
     return collection(db, "students");
   }, [db, currentUser, adminProfile]);
@@ -149,7 +145,7 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="text-center">
-            <p className="text-lg font-bold tracking-tight">Activating A to Z System</p>
+            <p className="text-lg font-bold tracking-tight">Activating System</p>
             <p className="text-sm text-muted-foreground">Verifying secure administrative access...</p>
           </div>
         </div>
