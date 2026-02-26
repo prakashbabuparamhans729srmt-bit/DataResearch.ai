@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
@@ -19,7 +18,9 @@ import {
   Trophy,
   Loader2,
   Calendar,
-  Download
+  Download,
+  CheckCircle2,
+  AlertCircle
 } from "lucide-react"
 import { generateMockStudents, type Student } from "@/lib/mock-data"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
@@ -33,7 +34,7 @@ import { VoiceSearch } from "./VoiceSearch"
 import { AIInsights } from "./AIInsights"
 import { StudentAvatar } from "./StudentAvatar"
 import { type GenerativeVoiceSearchOutput } from "@/ai/flows/generative-voice-search"
-import { useCollection, useFirebase, useMemoFirebase, initiateAnonymousSignIn, addDocumentNonBlocking, setDocumentNonBlocking } from "@/firebase"
+import { useCollection, useFirebase, useMemoFirebase, initiateAnonymousSignIn, addDocumentNonBlocking, setDocumentNonBlocking, useDoc } from "@/firebase"
 import { collection, doc } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
 
@@ -54,20 +55,15 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("")
   const { toast } = useToast()
 
-  // Only attempt query when we have a user and db, and only if user is likely initialized as admin
-  const studentsQuery = useMemoFirebase(() => {
-    if (!db || !currentUser) return null;
-    return collection(db, "students");
-  }, [db, currentUser]);
-
-  const { data: dbStudents, isLoading: isDbLoading } = useCollection<Student>(studentsQuery);
-
+  // 1. Initial Authentication
   useEffect(() => {
     if (!loadingAuth && !currentUser && auth) {
       initiateAnonymousSignIn(auth);
     }
-    
-    // Auto-register current user as an admin to satisfy Security Rules
+  }, [loadingAuth, currentUser, auth]);
+
+  // 2. Register User as Admin to satisfy Security Rules
+  useEffect(() => {
     if (currentUser && db) {
       const adminRef = doc(db, "admin_users", currentUser.uid);
       setDocumentNonBlocking(adminRef, {
@@ -76,16 +72,35 @@ export default function Dashboard() {
         lastSeen: new Date().toISOString()
       }, { merge: true });
     }
-  }, [loadingAuth, currentUser, auth, db]);
+  }, [currentUser, db]);
+
+  // 3. Watch for Admin Status to prevent Permission Denied race conditions
+  const adminDocRef = useMemoFirebase(() => {
+    if (!db || !currentUser) return null;
+    return doc(db, "admin_users", currentUser.uid);
+  }, [db, currentUser]);
+
+  const { data: adminProfile, isLoading: isAdminLoading } = useDoc(adminDocRef);
+
+  // 4. Only attempt query when we have a user AND they are confirmed as an admin in Firestore
+  const studentsQuery = useMemoFirebase(() => {
+    if (!db || !currentUser || !adminProfile) return null;
+    return collection(db, "students");
+  }, [db, currentUser, adminProfile]);
+
+  const { data: dbStudents, isLoading: isDbLoading } = useCollection<Student>(studentsQuery);
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
   const handleSeedData = async () => {
-    if (!db || !currentUser) return;
+    if (!db || !currentUser || !adminProfile) {
+      toast({ variant: "destructive", title: "Wait...", description: "System still initializing permissions." });
+      return;
+    }
     const mockData = generateMockStudents(20);
-    toast({ title: "Seeding data...", description: "Adding mock students to Firestore" });
+    toast({ title: "Seeding data...", description: "Adding 20 mock students to Firestore" });
     
     mockData.forEach(student => {
       addDocumentNonBlocking(collection(db, "students"), student);
@@ -121,11 +136,19 @@ export default function Dashboard() {
   if (!mounted) return null;
 
   const renderContent = () => {
-    if (loadingAuth || (isDbLoading && !students.length)) {
+    if (loadingAuth || isAdminLoading || (isDbLoading && !students.length)) {
       return (
-        <div className="flex flex-col items-center justify-center py-40">
-          <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
-          <p className="text-muted-foreground animate-pulse">Initializing A to Z System...</p>
+        <div className="flex flex-col items-center justify-center py-40 space-y-4">
+          <div className="relative">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Zap className="h-4 w-4 text-primary animate-pulse" />
+            </div>
+          </div>
+          <div className="text-center">
+            <p className="text-lg font-bold tracking-tight">Activating A to Z System</p>
+            <p className="text-sm text-muted-foreground">Verifying secure administrative access...</p>
+          </div>
         </div>
       )
     }
@@ -179,7 +202,11 @@ export default function Dashboard() {
                       </div>
                     </div>
                   )) : (
-                    <p className="text-center text-xs text-muted-foreground py-10">No records found. Click Seed Data above.</p>
+                    <div className="py-10 text-center space-y-3">
+                      <AlertCircle className="h-8 w-8 text-muted-foreground mx-auto" />
+                      <p className="text-xs text-muted-foreground">No students in database.</p>
+                      <Button variant="outline" size="sm" onClick={handleSeedData}>Seed Data Now</Button>
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -373,7 +400,7 @@ export default function Dashboard() {
               <StudentAvatar name={currentUser?.displayName || "Research Admin"} className="h-8 w-8" />
               <div className="flex flex-col">
                 <span className="text-xs font-medium">{currentUser?.displayName || "Research Admin"}</span>
-                <span className="text-[10px] text-muted-foreground">Admin</span>
+                <span className="text-[10px] text-muted-foreground">Admin Status: {adminProfile ? 'Verified' : 'Pending'}</span>
               </div>
             </div>
           </SidebarFooter>
@@ -392,11 +419,11 @@ export default function Dashboard() {
             <div className="flex items-center gap-4">
               <Button variant="ghost" size="icon" className="relative text-muted-foreground">
                 <Bell className="h-5 w-5" />
-                <span className="absolute top-2 right-2 h-2 w-2 bg-primary rounded-full" />
+                {stats.activeCount > 0 && <span className="absolute top-2 right-2 h-2 w-2 bg-primary rounded-full" />}
               </Button>
               <Button 
                 onClick={handleSeedData}
-                disabled={!currentUser}
+                disabled={!adminProfile}
                 className="gradient-border bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
               >
                 <Upload className="h-4 w-4 mr-2" />
@@ -414,8 +441,9 @@ export default function Dashboard() {
                 </p>
               </div>
               <div className="flex gap-2">
-                <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 px-3 py-1">
-                  System Online
+                <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 px-3 py-1 flex items-center gap-1">
+                  <CheckCircle2 className="h-3 w-3" />
+                  System Secure
                 </Badge>
               </div>
             </div>
