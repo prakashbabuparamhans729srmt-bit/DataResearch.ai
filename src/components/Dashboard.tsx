@@ -34,7 +34,7 @@ import { VoiceSearch } from "./VoiceSearch"
 import { AIInsights } from "./AIInsights"
 import { StudentAvatar } from "./StudentAvatar"
 import { type GenerativeVoiceSearchOutput } from "@/ai/flows/generative-voice-search"
-import { useCollection, useFirebase, useMemoFirebase, initiateAnonymousSignIn, addDocumentNonBlocking, setDocumentNonBlocking, useDoc } from "@/firebase"
+import { useCollection, useFirebase, useMemoFirebase, initiateAnonymousSignIn, setDocumentNonBlocking, useDoc } from "@/firebase"
 import { collection, doc } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
 
@@ -84,6 +84,7 @@ export default function Dashboard() {
 
   // 4. Only attempt query when we have a user AND they are confirmed as an admin in Firestore
   const studentsQuery = useMemoFirebase(() => {
+    // Crucially wait for adminProfile to be truthy before firing the list request
     if (!db || !currentUser || !adminProfile) return null;
     return collection(db, "students");
   }, [db, currentUser, adminProfile]);
@@ -102,8 +103,10 @@ export default function Dashboard() {
     const mockData = generateMockStudents(20);
     toast({ title: "Seeding data...", description: "Adding 20 mock students to Firestore" });
     
+    const studentsCol = collection(db, "students");
     mockData.forEach(student => {
-      addDocumentNonBlocking(collection(db, "students"), student);
+      const studentRef = doc(studentsCol, student.id);
+      setDocumentNonBlocking(studentRef, student, { merge: true });
     });
   };
 
