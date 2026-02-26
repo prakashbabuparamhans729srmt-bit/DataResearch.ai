@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
@@ -16,7 +15,8 @@ import {
   Target,
   Zap,
   TrendingUp,
-  Trophy
+  Trophy,
+  Loader2
 } from "lucide-react"
 import { generateMockStudents, type Student } from "@/lib/mock-data"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
@@ -30,6 +30,9 @@ import { VoiceSearch } from "./VoiceSearch"
 import { AIInsights } from "./AIInsights"
 import { StudentAvatar } from "./StudentAvatar"
 import { type GenerativeVoiceSearchOutput } from "@/ai/flows/generative-voice-search"
+import { useCollection, useFirebase, useMemoFirebase, initiateAnonymousSignIn, addDocumentNonBlocking } from "@/firebase"
+import { collection } from "firebase/firestore"
+import { useToast } from "@/hooks/use-toast"
 
 const navigation = [
   { name: 'Dashboard', icon: LayoutDashboard, current: true },
@@ -40,15 +43,43 @@ const navigation = [
 ]
 
 export default function Dashboard() {
-  const [students, setStudents] = useState<Student[]>([])
+  const [mounted, setMounted] = useState(false)
+  const { firestore: db, auth, user: currentUser, isUserLoading: loadingAuth } = useFirebase();
+
   const [filters, setFilters] = useState<GenerativeVoiceSearchOutput>({})
   const [searchQuery, setSearchQuery] = useState("")
+  const { toast } = useToast()
+
+  // Stabilize the students collection query
+  const studentsQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    return collection(db, "students");
+  }, [db]);
+
+  const { data: dbStudents, isLoading: isDbLoading } = useCollection<Student>(studentsQuery);
+
+  // Initialize data if empty and auth is ready
+  useEffect(() => {
+    if (!loadingAuth && !currentUser && auth) {
+      initiateAnonymousSignIn(auth);
+    }
+  }, [loadingAuth, currentUser, auth]);
 
   useEffect(() => {
-    // Generate mock students only on the client to avoid hydration mismatch
-    // (Math.random in generateMockStudents produces different values on server vs client)
-    setStudents(generateMockStudents(100))
+    setMounted(true)
   }, [])
+
+  const handleSeedData = async () => {
+    if (!db || !currentUser) return;
+    const mockData = generateMockStudents(20);
+    toast({ title: "Seeding data...", description: "Adding mock students to Firestore" });
+    
+    mockData.forEach(student => {
+      addDocumentNonBlocking(collection(db, "students"), student);
+    });
+  };
+
+  const students = useMemo(() => dbStudents || [], [dbStudents]);
 
   const filteredStudents = useMemo(() => {
     return students.filter(student => {
@@ -73,6 +104,8 @@ export default function Dashboard() {
   }), [filteredStudents])
 
   const topPerformers = useMemo(() => [...filteredStudents].sort((a, b) => b.averageScorePercentage - a.averageScorePercentage).slice(0, 5), [filteredStudents])
+
+  if (!mounted) return null;
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -162,10 +195,10 @@ export default function Dashboard() {
           </SidebarContent>
           <SidebarFooter className="p-4 border-t border-white/5">
             <div className="flex items-center gap-3 p-2 rounded-xl bg-white/5">
-              <StudentAvatar name="Admin User" className="h-8 w-8" />
+              <StudentAvatar name={currentUser?.isAnonymous ? "Guest Researcher" : (currentUser?.displayName || "Dr. Smith")} className="h-8 w-8" />
               <div className="flex flex-col">
-                <span className="text-xs font-medium">Dr. Smith</span>
-                <span className="text-[10px] text-muted-foreground">Analyst</span>
+                <span className="text-xs font-medium">{currentUser?.isAnonymous ? "Guest" : (currentUser?.displayName || "Dr. Smith")}</span>
+                <span className="text-[10px] text-muted-foreground">{currentUser ? "Authenticated" : "Connecting..."}</span>
               </div>
             </div>
           </SidebarFooter>
@@ -183,9 +216,12 @@ export default function Dashboard() {
                 <Bell className="h-5 w-5" />
                 <span className="absolute top-2 right-2 h-2 w-2 bg-primary rounded-full" />
               </Button>
-              <Button className="gradient-border bg-primary/10 text-primary border-primary/20 hover:bg-primary/20">
+              <Button 
+                onClick={handleSeedData}
+                className="gradient-border bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
+              >
                 <Upload className="h-4 w-4 mr-2" />
-                <span>Upload Data</span>
+                <span>Seed Data</span>
               </Button>
             </div>
           </header>
@@ -194,7 +230,9 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold tracking-tight">Real-Time Analytics</h2>
-                <p className="text-muted-foreground text-sm">Monitoring {filteredStudents.length} students in real-time.</p>
+                <p className="text-muted-foreground text-sm">
+                  {isDbLoading ? "Connecting to database..." : `Monitoring ${filteredStudents.length} students in real-time.`}
+                </p>
               </div>
               <div className="flex gap-2">
                 <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 px-3 py-1">
@@ -203,67 +241,80 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {[
-                { label: 'Attendance', value: `${stats.attendance}%`, icon: Zap, color: 'text-indigo-400', bg: 'bg-indigo-400/10' },
-                { label: 'Avg Score', value: stats.avgScore, icon: TrendingUp, color: 'text-emerald-400', bg: 'bg-emerald-400/10' },
-                { label: 'Completion', value: `${stats.completion}%`, icon: Target, color: 'text-purple-400', bg: 'bg-purple-400/10' },
-                { label: 'Top Rank', value: '#3', icon: Trophy, color: 'text-amber-400', bg: 'bg-amber-400/10' },
-              ].map((stat) => (
-                <Card key={stat.label} className="glass-card hover:translate-y-[-2px] transition-transform duration-300">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div className={`p-2 rounded-lg ${stat.bg}`}>
-                        <stat.icon className={`h-5 w-5 ${stat.color}`} />
-                      </div>
-                      <MoreVertical className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                    <div className="mt-4">
-                      <p className="text-3xl font-bold">{stat.value}</p>
-                      <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mt-1">{stat.label}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <PerformanceTrend />
-              
-              <Card className="glass-card">
-                <CardHeader>
-                  <CardTitle className="text-sm font-medium">Top Performers</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {topPerformers.map((student) => (
-                    <div key={student.id} className="flex items-center justify-between group cursor-pointer">
-                      <div className="flex items-center gap-3">
-                        <StudentAvatar name={student.name} className="h-9 w-9" />
-                        <div>
-                          <p className="text-sm font-medium group-hover:text-primary transition-colors">{student.name}</p>
-                          <p className="text-[10px] text-muted-foreground">{student.tags[0]}</p>
+            {isDbLoading ? (
+               <div className="flex items-center justify-center py-20">
+                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                 <span className="ml-3 text-muted-foreground">Loading analytics...</span>
+               </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {[
+                    { label: 'Attendance', value: `${stats.attendance}%`, icon: Zap, color: 'text-indigo-400', bg: 'bg-indigo-400/10' },
+                    { label: 'Avg Score', value: stats.avgScore, icon: TrendingUp, color: 'text-emerald-400', bg: 'bg-emerald-400/10' },
+                    { label: 'Completion', value: `${stats.completion}%`, icon: Target, color: 'text-purple-400', bg: 'bg-purple-400/10' },
+                    { label: 'Top Rank', value: '#3', icon: Trophy, color: 'text-amber-400', bg: 'bg-amber-400/10' },
+                  ].map((stat) => (
+                    <Card key={stat.label} className="glass-card hover:translate-y-[-2px] transition-transform duration-300">
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                          <div className={`p-2 rounded-lg ${stat.bg}`}>
+                            <stat.icon className={`h-5 w-5 ${stat.color}`} />
+                          </div>
+                          <MoreVertical className="h-4 w-4 text-muted-foreground" />
                         </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-bold">{student.averageScorePercentage}%</p>
-                        <div className="flex gap-0.5">
-                          {[1, 2, 3, 4, 5].map(star => (
-                            <div key={star} className={`h-1.5 w-1.5 rounded-full ${star <= 4 ? 'bg-amber-400' : 'bg-white/10'}`} />
-                          ))}
+                        <div className="mt-4">
+                          <p className="text-3xl font-bold">{stat.value}</p>
+                          <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mt-1">{stat.label}</p>
                         </div>
-                      </div>
-                    </div>
+                      </CardContent>
+                    </Card>
                   ))}
-                  <Button variant="ghost" size="sm" className="w-full text-xs mt-2 text-muted-foreground hover:text-primary">
-                    View All Rankings
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
+                </div>
 
-            <AIInsights students={filteredStudents.slice(0, 20)} />
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <PerformanceTrend />
+                  
+                  <Card className="glass-card">
+                    <CardHeader>
+                      <CardTitle className="text-sm font-medium">Top Performers</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {topPerformers.length > 0 ? topPerformers.map((student) => (
+                        <div key={student.id} className="flex items-center justify-between group cursor-pointer">
+                          <div className="flex items-center gap-3">
+                            <StudentAvatar name={student.name} className="h-9 w-9" />
+                            <div>
+                              <p className="text-sm font-medium group-hover:text-primary transition-colors">{student.name}</p>
+                              <p className="text-[10px] text-muted-foreground">{student.tags[0]}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-bold">{student.averageScorePercentage}%</p>
+                            <div className="flex gap-0.5">
+                              {[1, 2, 3, 4, 5].map(star => (
+                                <div key={star} className={`h-1.5 w-1.5 rounded-full ${star <= 4 ? 'bg-amber-400' : 'bg-white/10'}`} />
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )) : (
+                        <p className="text-center text-xs text-muted-foreground py-10">No students available. Use "Seed Data" to populate.</p>
+                      )}
+                      {topPerformers.length > 0 && (
+                        <Button variant="ghost" size="sm" className="w-full text-xs mt-2 text-muted-foreground hover:text-primary">
+                          View All Rankings
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
 
-            <StudentTable students={filteredStudents} />
+                <AIInsights students={filteredStudents.slice(0, 20)} />
+
+                <StudentTable students={filteredStudents} />
+              </>
+            )}
           </main>
         </SidebarInset>
       </div>
