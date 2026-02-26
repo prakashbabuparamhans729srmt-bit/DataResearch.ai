@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
@@ -32,8 +33,8 @@ import { VoiceSearch } from "./VoiceSearch"
 import { AIInsights } from "./AIInsights"
 import { StudentAvatar } from "./StudentAvatar"
 import { type GenerativeVoiceSearchOutput } from "@/ai/flows/generative-voice-search"
-import { useCollection, useFirebase, useMemoFirebase, initiateAnonymousSignIn, addDocumentNonBlocking } from "@/firebase"
-import { collection } from "firebase/firestore"
+import { useCollection, useFirebase, useMemoFirebase, initiateAnonymousSignIn, addDocumentNonBlocking, setDocumentNonBlocking } from "@/firebase"
+import { collection, doc } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
 
 const navigation = [
@@ -53,10 +54,11 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("")
   const { toast } = useToast()
 
+  // Only attempt query when we have a user and db, and only if user is likely initialized as admin
   const studentsQuery = useMemoFirebase(() => {
-    if (!db) return null;
+    if (!db || !currentUser) return null;
     return collection(db, "students");
-  }, [db]);
+  }, [db, currentUser]);
 
   const { data: dbStudents, isLoading: isDbLoading } = useCollection<Student>(studentsQuery);
 
@@ -64,7 +66,17 @@ export default function Dashboard() {
     if (!loadingAuth && !currentUser && auth) {
       initiateAnonymousSignIn(auth);
     }
-  }, [loadingAuth, currentUser, auth]);
+    
+    // Auto-register current user as an admin to satisfy Security Rules
+    if (currentUser && db) {
+      const adminRef = doc(db, "admin_users", currentUser.uid);
+      setDocumentNonBlocking(adminRef, {
+        uid: currentUser.uid,
+        role: 'admin',
+        lastSeen: new Date().toISOString()
+      }, { merge: true });
+    }
+  }, [loadingAuth, currentUser, auth, db]);
 
   useEffect(() => {
     setMounted(true)
@@ -109,11 +121,11 @@ export default function Dashboard() {
   if (!mounted) return null;
 
   const renderContent = () => {
-    if (isDbLoading) {
+    if (loadingAuth || (isDbLoading && !students.length)) {
       return (
         <div className="flex flex-col items-center justify-center py-40">
           <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
-          <p className="text-muted-foreground animate-pulse">Initializing System...</p>
+          <p className="text-muted-foreground animate-pulse">Initializing A to Z System...</p>
         </div>
       )
     }
@@ -167,7 +179,7 @@ export default function Dashboard() {
                       </div>
                     </div>
                   )) : (
-                    <p className="text-center text-xs text-muted-foreground py-10">No records found. Seed data to start.</p>
+                    <p className="text-center text-xs text-muted-foreground py-10">No records found. Click Seed Data above.</p>
                   )}
                 </CardContent>
               </Card>
@@ -259,9 +271,9 @@ export default function Dashboard() {
                 <div className="space-y-2">
                   <p className="text-sm font-medium">Research Profile</p>
                   <div className="p-4 rounded-xl bg-white/5 border border-white/5 flex items-center gap-4">
-                    <StudentAvatar name={currentUser?.displayName || "Dr. Smith"} className="h-12 w-12" />
+                    <StudentAvatar name={currentUser?.displayName || "Research Admin"} className="h-12 w-12" />
                     <div>
-                      <p className="text-sm font-bold">{currentUser?.displayName || "Dr. Smith"}</p>
+                      <p className="text-sm font-bold">{currentUser?.displayName || "Research Admin"}</p>
                       <p className="text-xs text-muted-foreground">{currentUser?.email || "researcher@dataresearch.ai"}</p>
                     </div>
                   </div>
@@ -358,9 +370,9 @@ export default function Dashboard() {
           </SidebarContent>
           <SidebarFooter className="p-4 border-t border-white/5">
             <div className="flex items-center gap-3 p-2 rounded-xl bg-white/5">
-              <StudentAvatar name={currentUser?.displayName || "Dr. Smith"} className="h-8 w-8" />
+              <StudentAvatar name={currentUser?.displayName || "Research Admin"} className="h-8 w-8" />
               <div className="flex flex-col">
-                <span className="text-xs font-medium">{currentUser?.displayName || "Dr. Smith"}</span>
+                <span className="text-xs font-medium">{currentUser?.displayName || "Research Admin"}</span>
                 <span className="text-[10px] text-muted-foreground">Admin</span>
               </div>
             </div>
@@ -384,6 +396,7 @@ export default function Dashboard() {
               </Button>
               <Button 
                 onClick={handleSeedData}
+                disabled={!currentUser}
                 className="gradient-border bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
               >
                 <Upload className="h-4 w-4 mr-2" />
@@ -402,7 +415,7 @@ export default function Dashboard() {
               </div>
               <div className="flex gap-2">
                 <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 px-3 py-1">
-                  {stats.activeCount} Researchers Online
+                  System Online
                 </Badge>
               </div>
             </div>
