@@ -19,7 +19,9 @@ import {
   CheckCircle2,
   AlertCircle,
   ShieldCheck,
-  Search
+  Moon,
+  Sun,
+  Monitor
 } from "lucide-react"
 import { generateMockStudents, type Student } from "@/lib/mock-data"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
@@ -32,6 +34,7 @@ import { PerformanceTrend } from "./PerformanceChart"
 import { VoiceSearch } from "./VoiceSearch"
 import { AIInsights } from "./AIInsights"
 import { StudentAvatar } from "./StudentAvatar"
+import { Chatbot } from "./Chatbot"
 import { type GenerativeVoiceSearchOutput } from "@/ai/flows/generative-voice-search"
 import { useCollection, useFirebase, useMemoFirebase, initiateAnonymousSignIn, setDocumentNonBlocking, useDoc } from "@/firebase"
 import { collection, doc } from "firebase/firestore"
@@ -39,7 +42,7 @@ import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 
 const navigation = [
-  { id: 'dashboard', name: 'System Overview', icon: LayoutDashboard },
+  { id: 'dashboard', name: 'Operational Hub', icon: LayoutDashboard },
   { id: 'students', name: 'Student Records', icon: Users },
   { id: 'analysis', name: 'Intelligence Unit', icon: BarChart3 },
   { id: 'reports', name: 'Archive Vault', icon: FileText },
@@ -53,16 +56,17 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('dashboard')
   const [filters, setFilters] = useState<GenerativeVoiceSearchOutput>({})
   const [searchQuery, setSearchQuery] = useState("")
+  const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('dark')
   const { toast } = useToast()
 
-  // 1. Initial Authentication
+  // Initial Authentication
   useEffect(() => {
     if (!loadingAuth && !currentUser && auth) {
       initiateAnonymousSignIn(auth);
     }
   }, [loadingAuth, currentUser, auth]);
 
-  // 2. Register User as Admin to satisfy Security Rules
+  // Register User as Admin
   useEffect(() => {
     if (currentUser && db) {
       const adminRef = doc(db, "admin_users", currentUser.uid);
@@ -74,7 +78,19 @@ export default function Dashboard() {
     }
   }, [currentUser, db]);
 
-  // 3. Watch for Admin Status to prevent Permission Denied race conditions
+  // Theme Management
+  useEffect(() => {
+    const root = window.document.documentElement;
+    root.classList.remove("light", "dark");
+
+    if (theme === "system") {
+      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      root.classList.add(systemTheme);
+    } else {
+      root.classList.add(theme);
+    }
+  }, [theme]);
+
   const adminDocRef = useMemoFirebase(() => {
     if (!db || !currentUser) return null;
     return doc(db, "admin_users", currentUser.uid);
@@ -82,7 +98,6 @@ export default function Dashboard() {
 
   const { data: adminProfile, isLoading: isAdminLoading } = useDoc(adminDocRef);
 
-  // 4. Only attempt query when we have a user AND they are confirmed as an admin in Firestore
   const studentsQuery = useMemoFirebase(() => {
     if (!db || !currentUser || !adminProfile) return null;
     return collection(db, "students");
@@ -120,8 +135,15 @@ export default function Dashboard() {
       }
       if (filters.minScore !== undefined && student.averageScorePercentage < filters.minScore) return false
       if (filters.maxScore !== undefined && student.averageScorePercentage > filters.maxScore) return false
-      if (filters.keyword && !student.name.toLowerCase().includes(filters.keyword.toLowerCase())) return false
-      if (searchQuery && !student.name.toLowerCase().includes(searchQuery.toLowerCase())) return false
+      
+      const searchStr = (filters.keyword || searchQuery).toLowerCase();
+      if (searchStr) {
+        const matchesName = student.name.toLowerCase().includes(searchStr);
+        const matchesId = student.id.toLowerCase().includes(searchStr);
+        const matchesTags = student.tags.some(t => t.toLowerCase().includes(searchStr));
+        if (!matchesName && !matchesId && !matchesTags) return false;
+      }
+      
       return true
     })
   }, [students, filters, searchQuery])
@@ -293,7 +315,7 @@ export default function Dashboard() {
         )
       case 'settings':
         return (
-          <div className="max-w-3xl mx-auto animate-in slide-in-from-bottom-4 duration-700">
+          <div className="max-w-3xl mx-auto animate-in slide-in-from-bottom-4 duration-700 space-y-6">
             <Card className="glass-card overflow-hidden">
               <div className="h-24 bg-primary/10 relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-transparent" />
@@ -332,10 +354,36 @@ export default function Dashboard() {
                     </div>
                   </div>
                 </div>
+                
                 <Separator className="bg-white/5" />
-                <div className="flex justify-end gap-3">
-                  <Button variant="outline" className="border-white/10 hover:bg-white/5">Export Logs</Button>
-                  <Button className="bg-primary text-primary-foreground hover:bg-primary/80">Save Configuration</Button>
+                
+                <div className="space-y-4">
+                  <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary">Appearance Protocol</h4>
+                  <div className="flex flex-wrap gap-4">
+                    {[
+                      { id: 'light', label: 'Light Mode', icon: Sun },
+                      { id: 'dark', label: 'Dark Mode', icon: Moon },
+                      { id: 'system', label: 'System Default', icon: Monitor },
+                    ].map((m) => (
+                      <Button
+                        key={m.id}
+                        variant={theme === m.id ? "default" : "outline"}
+                        className={cn(
+                          "flex items-center gap-2 border-white/10 h-12 px-6 rounded-xl font-bold uppercase tracking-widest text-[10px]",
+                          theme === m.id && "bg-primary text-black hover:bg-primary/80"
+                        )}
+                        onClick={() => setTheme(m.id as any)}
+                      >
+                        <m.icon className="h-4 w-4" />
+                        {m.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4">
+                  <Button variant="outline" className="border-white/10 hover:bg-white/5 uppercase tracking-widest font-bold text-[10px]">Export Logs</Button>
+                  <Button className="bg-primary text-black hover:bg-primary/80 uppercase tracking-widest font-bold text-[10px]">Save Configuration</Button>
                 </div>
               </CardContent>
             </Card>
@@ -356,7 +404,7 @@ export default function Dashboard() {
                 <Target className="text-black h-6 w-6" />
               </div>
               <div>
-                <h1 className="text-lg font-bold tracking-tighter leading-none">RESEACH.<span className="text-primary neon-text">AI</span></h1>
+                <h1 className="text-lg font-bold tracking-tighter leading-none">RESEARCH.<span className="text-primary neon-text">AI</span></h1>
                 <p className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-bold">Data Research System</p>
               </div>
             </div>
@@ -378,7 +426,7 @@ export default function Dashboard() {
                             : "text-muted-foreground hover:text-foreground hover:bg-white/5"
                         )}
                       >
-                        <item.icon className={cn("h-5 w-5", activeTab === item.id && "neon-text")} />
+                        <item.icon className={cn("h-5 w-5", activeTab === item.id && "neon-text text-primary")} />
                         <span className="font-bold tracking-widest text-xs uppercase">{item.name}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -443,7 +491,7 @@ export default function Dashboard() {
           <header className="h-20 glass-card border-b border-white/10 px-8 flex items-center justify-between sticky top-0 z-10 shrink-0">
             <div className="flex items-center gap-6 flex-1">
               <SidebarTrigger className="md:hidden" />
-              <div className="flex items-center gap-3 w-full max-w-xl group">
+              <div className="flex items-center gap-3 w-full max-w-2xl group">
                 <VoiceSearch onResult={(res) => {
                   setFilters(res)
                   setActiveTab('students')
@@ -494,6 +542,7 @@ export default function Dashboard() {
             </div>
           </main>
         </SidebarInset>
+        <Chatbot />
       </div>
     </SidebarProvider>
   )
