@@ -28,7 +28,8 @@ import {
   Globe,
   Lock,
   ListChecks,
-  Info
+  Info,
+  Activity
 } from "lucide-react"
 import { generateMockStudents, type Student } from "@/lib/mock-data"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
@@ -312,8 +313,11 @@ export default function Dashboard() {
                   ))}
                   <Separator className="bg-white/5 my-2" />
                   <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
-                    <p className="text-[10px] text-primary/70 uppercase tracking-widest font-bold">Latest Intelligence</p>
-                    <p className="text-xs mt-1 leading-relaxed">System monitoring {filteredStudents.length} nodes across 8 categories.</p>
+                    <div className="flex items-center gap-2">
+                      <Activity className="h-3 w-3 text-primary" />
+                      <p className="text-[10px] text-primary/70 uppercase tracking-widest font-bold">A to Z Intelligence</p>
+                    </div>
+                    <p className="text-xs mt-1 leading-relaxed">System monitoring {filteredStudents.length} nodes across 8 categories with 100% integrity.</p>
                   </div>
                 </CardContent>
               </Card>
