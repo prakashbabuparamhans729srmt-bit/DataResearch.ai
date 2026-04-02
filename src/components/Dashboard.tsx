@@ -45,7 +45,7 @@ import { StudentAvatar } from "./StudentAvatar"
 import { Chatbot } from "./Chatbot"
 import { type GenerativeVoiceSearchOutput } from "@/ai/flows/generative-voice-search"
 import { useCollection, useFirebase, useMemoFirebase, setDocumentNonBlocking, useDoc, updateDocumentNonBlocking } from "@/firebase"
-import { collection, doc } from "firebase/firestore"
+import { collection, doc, writeBatch } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 
