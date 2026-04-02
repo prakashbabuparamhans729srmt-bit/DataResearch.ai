@@ -26,7 +26,9 @@ import {
   Save,
   Database,
   Globe,
-  Lock
+  Lock,
+  ListChecks,
+  Info
 } from "lucide-react"
 import { generateMockStudents, type Student } from "@/lib/mock-data"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
@@ -54,6 +56,15 @@ const navigation = [
   { id: 'reports', name: 'Archive Vault', icon: FileText },
   { id: 'settings', name: 'Control Panel', icon: Settings },
 ]
+
+const MISSION_OBJECTIVES = [
+  "Data-driven education for India",
+  "Real-time performance analytics",
+  "AI-driven insights for teachers",
+  "Bridge the rural-urban gap",
+  "Skill development monitoring",
+  "National Objective Compliance"
+];
 
 export default function Dashboard() {
   const [mounted, setMounted] = useState(false)
@@ -134,7 +145,7 @@ export default function Dashboard() {
         setDocumentNonBlocking(studentRef, student, { merge: true });
       });
       toast({
-        title: "Auto-Sync Protocol Active",
+        title: "A to Z Auto-Sync Active",
         description: "Restoring 20 intelligence nodes from cloud backup.",
       });
     }
@@ -176,8 +187,8 @@ export default function Dashboard() {
     setTimeout(() => {
       setIsSavingConfig(false);
       toast({
-        title: "Protocol Updated",
-        description: "A to Z configuration has been securely saved to the cloud.",
+        title: "A to Z Protocol Updated",
+        description: "Configuration has been securely saved to the cloud.",
       });
     }, 800);
   };
@@ -242,7 +253,7 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="text-center">
-            <h3 className="text-xl font-bold tracking-widest text-primary neon-text uppercase">System Initializing</h3>
+            <h3 className="text-xl font-bold tracking-widest text-primary neon-text uppercase">A to Z System Booting</h3>
             <p className="text-sm text-muted-foreground mt-1">Verifying secure administrative protocols...</p>
           </div>
         </div>
@@ -253,6 +264,7 @@ export default function Dashboard() {
       case 'dashboard':
         return (
           <div className="space-y-6 animate-in fade-in duration-700">
+            {/* Quick Metrics */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {[
                 { label: 'Attendance', value: `${stats.attendance}%`, icon: Zap, color: 'text-primary' },
@@ -281,6 +293,30 @@ export default function Dashboard() {
               <PerformanceTrend students={filteredStudents} />
               <Card className="glass-card">
                 <CardHeader>
+                  <CardTitle className="text-sm font-bold tracking-widest uppercase text-primary">Mission India Objectives</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {MISSION_OBJECTIVES.map((obj, i) => (
+                    <div key={i} className="flex items-center gap-3 group">
+                      <div className="h-2 w-2 rounded-full bg-primary neon-glow" />
+                      <span className="text-xs text-muted-foreground font-medium group-hover:text-foreground transition-colors">{obj}</span>
+                    </div>
+                  ))}
+                  <Separator className="bg-white/5 my-2" />
+                  <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
+                    <p className="text-[10px] text-primary/70 uppercase tracking-widest font-bold">Latest Intelligence</p>
+                    <p className="text-xs mt-1 leading-relaxed">System monitoring {filteredStudents.length} nodes across 8 categories.</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <StudentTable students={filteredStudents.slice(0, 5)} />
+              </div>
+              <Card className="glass-card">
+                <CardHeader>
                   <CardTitle className="text-sm font-bold tracking-widest uppercase text-primary">Elite Performers</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-5">
@@ -300,15 +336,15 @@ export default function Dashboard() {
                   )) : (
                     <div className="py-10 text-center space-y-4">
                       <AlertCircle className="h-10 w-10 text-primary/40 mx-auto" />
-                      <p className="text-xs text-muted-foreground tracking-widest uppercase">Database Offline</p>
-                      <Button variant="outline" size="sm" onClick={handleSeedData} className="border-primary/50 text-primary hover:bg-primary/10">Restore Records</Button>
+                      <p className="text-xs text-muted-foreground tracking-widest uppercase">Database Empty</p>
+                      <Button variant="outline" size="sm" onClick={handleSeedData} className="border-primary/50 text-primary hover:bg-primary/10">Initialize Nodes</Button>
                     </div>
                   )}
                 </CardContent>
               </Card>
             </div>
+            
             {neuralInsights && <AIInsights students={filteredStudents.slice(0, 20)} />}
-            <StudentTable students={filteredStudents.slice(0, 5)} />
           </div>
         )
       case 'students':
@@ -397,6 +433,10 @@ export default function Dashboard() {
             <Card className="glass-card overflow-hidden">
               <div className="h-24 bg-primary/10 relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-transparent" />
+                <div className="absolute top-4 right-6 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 flex items-center gap-2">
+                  <ShieldCheck className="h-3 w-3 text-primary" />
+                  <span className="text-[9px] font-bold uppercase tracking-widest">A to Z Active Mode</span>
+                </div>
               </div>
               <CardHeader className="relative pb-10">
                 <div className="absolute -top-12 left-6">
@@ -404,13 +444,15 @@ export default function Dashboard() {
                 </div>
                 <div className="pl-28">
                   <CardTitle className="text-xl font-bold">{currentUser?.displayName || "Research Director"}</CardTitle>
-                  <CardDescription className="text-primary neon-text font-bold text-[10px] uppercase tracking-[0.2em]">{adminProfile ? 'Access Level: Omega' : 'Access Pending'}</CardDescription>
+                  <CardDescription className="text-primary neon-text font-bold text-[10px] uppercase tracking-[0.2em]">Security Protocol: {securityLevel}</CardDescription>
                 </div>
               </CardHeader>
               <CardContent className="space-y-8">
                 <div className="grid md:grid-cols-2 gap-8">
                   <div className="space-y-4">
-                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary">Core Identity</h4>
+                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-2">
+                      <Users className="h-3 w-3" /> Core Identity
+                    </h4>
                     <div className="space-y-1">
                       <p className="text-xs text-muted-foreground">Admin UID</p>
                       <p className="text-sm font-mono bg-white/5 p-2 rounded border border-white/5 truncate">{currentUser?.uid}</p>
@@ -421,12 +463,14 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <div className="space-y-4">
-                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary">System Preferences</h4>
-                    <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
+                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-2">
+                      <Settings className="h-3 w-3" /> System Preferences
+                    </h4>
+                    <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5 hover:border-primary/20 transition-all">
                       <span className="text-xs font-medium">Auto-Sync Records</span>
                       <Switch checked={autoSync} onCheckedChange={setAutoSync} className="data-[state=checked]:bg-primary" />
                     </div>
-                    <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
+                    <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5 hover:border-primary/20 transition-all">
                       <span className="text-xs font-medium">Neural Insights</span>
                       <Switch checked={neuralInsights} onCheckedChange={setNeuralInsights} className="data-[state=checked]:bg-primary" />
                     </div>
@@ -435,7 +479,9 @@ export default function Dashboard() {
 
                 <div className="grid md:grid-cols-2 gap-8">
                   <div className="space-y-4">
-                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary">Language Protocol</h4>
+                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-2">
+                      <Globe className="h-3 w-3" /> Language Protocol
+                    </h4>
                     <div className="flex items-center gap-4">
                       {[
                         { id: 'Hindi', icon: Globe },
@@ -456,7 +502,9 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <div className="space-y-4">
-                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary">Security Level</h4>
+                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-2">
+                      <Lock className="h-3 w-3" /> Security Level
+                    </h4>
                     <div className="flex items-center gap-4">
                       {[
                         { id: 'Standard', icon: Lock },
@@ -481,7 +529,9 @@ export default function Dashboard() {
                 <Separator className="bg-white/5" />
                 
                 <div className="space-y-4">
-                  <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary">Appearance Protocol</h4>
+                  <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-2">
+                    <Monitor className="h-3 w-3" /> Appearance Protocol
+                  </h4>
                   <div className="flex flex-wrap gap-4">
                     {[
                       { id: 'light', label: 'Light Mode', icon: Sun },
@@ -508,7 +558,7 @@ export default function Dashboard() {
                     <Database className="h-3 w-3 mr-2" />
                     Export Logs
                   </Button>
-                  <Button disabled={isSavingConfig} onClick={handleSaveSettings} className="bg-primary text-black hover:bg-primary/80 uppercase tracking-widest font-bold text-[10px]">
+                  <Button disabled={isSavingConfig} onClick={handleSaveSettings} className="bg-primary text-black hover:bg-primary/80 uppercase tracking-widest font-bold text-[10px] neon-glow">
                     {isSavingConfig ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3 mr-2" />}
                     Save Configuration
                   </Button>
@@ -533,7 +583,7 @@ export default function Dashboard() {
               </div>
               <div>
                 <h1 className="text-lg font-bold tracking-tighter leading-none">RESEARCH.<span className="text-primary neon-text">AI</span></h1>
-                <p className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-bold">Data Research System</p>
+                <p className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-bold">A to Z Data System</p>
               </div>
             </div>
           </SidebarHeader>
@@ -608,7 +658,7 @@ export default function Dashboard() {
                 <span className="text-xs font-bold truncate">{currentUser?.displayName || "Research Lead"}</span>
                 <div className="flex items-center gap-1">
                   <div className="h-1.5 w-1.5 rounded-full bg-primary neon-glow animate-pulse" />
-                  <span className="text-[8px] text-primary/80 uppercase tracking-widest font-bold">{adminProfile ? 'Status: Secure' : 'Syncing...'}</span>
+                  <span className="text-[8px] text-primary/80 uppercase tracking-widest font-bold">{adminProfile ? `Status: ${securityLevel}` : 'Syncing...'}</span>
                 </div>
               </div>
             </div>
@@ -630,7 +680,7 @@ export default function Dashboard() {
             <div className="flex items-center gap-6">
               <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5">
                 <ShieldCheck className="h-3 w-3 text-primary" />
-                <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-muted-foreground">Admin Mode Active</span>
+                <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-muted-foreground">Admin: {securityLevel}</span>
               </div>
               <Button variant="ghost" size="icon" className="relative text-muted-foreground hover:text-primary transition-colors">
                 <Bell className="h-5 w-5" />
@@ -660,7 +710,7 @@ export default function Dashboard() {
               <div className="flex gap-2">
                 <div className="bg-primary/10 text-primary border border-primary/20 px-4 py-2 rounded-xl flex items-center gap-2 group cursor-default transition-all hover:bg-primary/20">
                   <CheckCircle2 className="h-4 w-4" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest">Protocol Integrity: 100%</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest">A to Z Integrity: 100%</span>
                 </div>
               </div>
             </div>
