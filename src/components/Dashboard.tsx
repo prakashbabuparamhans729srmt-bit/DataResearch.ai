@@ -128,7 +128,7 @@ export default function Dashboard() {
       return;
     }
     const mockData = generateMockStudents(20);
-    toast({ title: "Initializing Data Research", description: "Injecting 20 secure records into Firestore" });
+    toast({ title: "Initializing Research", description: "Injecting 20 secure records into Firestore" });
     
     const studentsCol = collection(db, "students");
     mockData.forEach(student => {
