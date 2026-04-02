@@ -69,20 +69,21 @@ export default function Dashboard() {
 
   const { toast } = useToast()
 
-  // Initial Authentication
+  // Initial Authentication check handled by Root Page, but ensuring session here
   useEffect(() => {
     if (!loadingAuth && !currentUser && auth) {
       initiateAnonymousSignIn(auth);
     }
   }, [loadingAuth, currentUser, auth]);
 
-  // Register User as Admin
+  // Register User as Admin or Update Last Seen
   useEffect(() => {
     if (currentUser && db) {
       const adminRef = doc(db, "admin_users", currentUser.uid);
       setDocumentNonBlocking(adminRef, {
         uid: currentUser.uid,
-        role: 'admin',
+        displayName: currentUser.displayName || "Research Admin",
+        email: currentUser.email,
         lastSeen: new Date().toISOString()
       }, { merge: true });
     }
@@ -108,10 +109,19 @@ export default function Dashboard() {
 
   const { data: adminProfile, isLoading: isAdminLoading } = useDoc(adminDocRef);
 
+  // Sync Settings from DB once loaded
+  useEffect(() => {
+    if (adminProfile) {
+      if (adminProfile.theme) setTheme(adminProfile.theme);
+      if (adminProfile.autoSync !== undefined) setAutoSync(adminProfile.autoSync);
+      if (adminProfile.neuralInsights !== undefined) setNeuralInsights(adminProfile.neuralInsights);
+    }
+  }, [adminProfile]);
+
   const studentsQuery = useMemoFirebase(() => {
-    if (!db || !currentUser || !adminProfile) return null;
+    if (!db) return null;
     return collection(db, "students");
-  }, [db, currentUser, adminProfile]);
+  }, [db]);
 
   const { data: dbStudents, isLoading: isDbLoading } = useCollection<Student>(studentsQuery);
 
@@ -120,7 +130,7 @@ export default function Dashboard() {
   }, [])
 
   const handleSeedData = async () => {
-    if (!db || !currentUser || !adminProfile) {
+    if (!db || !currentUser) {
       toast({ variant: "destructive", title: "Access Denied", description: "Authorization system initializing." });
       return;
     }
@@ -224,7 +234,7 @@ export default function Dashboard() {
                 { label: 'Attendance', value: `${stats.attendance}%`, icon: Zap, color: 'text-primary' },
                 { label: 'Avg Score', value: stats.avgScore, icon: TrendingUp, color: 'text-primary' },
                 { label: 'Completion', value: `${stats.completion}%`, icon: Target, color: 'text-primary' },
-                { label: 'Top Rank', value: '#3', icon: Trophy, color: 'text-primary' },
+                { label: 'Rankings', value: filteredStudents.length > 0 ? `#${filteredStudents[0]?.rank || 1}` : 'N/A', icon: Trophy, color: 'text-primary' },
               ].map((stat) => (
                 <Card key={stat.label} className="glass-card hover:translate-y-[-4px] transition-all duration-300 group">
                   <CardContent className="p-6">
@@ -273,7 +283,7 @@ export default function Dashboard() {
                 </CardContent>
               </Card>
             </div>
-            <AIInsights students={filteredStudents.slice(0, 20)} />
+            {neuralInsights && <AIInsights students={filteredStudents.slice(0, 20)} />}
             <StudentTable students={filteredStudents.slice(0, 5)} />
           </div>
         )
@@ -373,11 +383,11 @@ export default function Dashboard() {
                     <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary">Core Identity</h4>
                     <div className="space-y-1">
                       <p className="text-xs text-muted-foreground">Admin UID</p>
-                      <p className="text-sm font-mono bg-white/5 p-2 rounded border border-white/5">{currentUser?.uid}</p>
+                      <p className="text-sm font-mono bg-white/5 p-2 rounded border border-white/5 truncate">{currentUser?.uid}</p>
                     </div>
                     <div className="space-y-1">
                       <p className="text-xs text-muted-foreground">Contact Node</p>
-                      <p className="text-sm font-mono bg-white/5 p-2 rounded border border-white/5">{currentUser?.email || "admin@dataresearch.ai"}</p>
+                      <p className="text-sm font-mono bg-white/5 p-2 rounded border border-white/5 truncate">{currentUser?.email || "admin@dataresearch.ai"}</p>
                     </div>
                   </div>
                   <div className="space-y-4">
@@ -553,7 +563,7 @@ export default function Dashboard() {
               </Button>
               <Button 
                 onClick={handleSeedData}
-                disabled={!adminProfile}
+                disabled={isDbLoading}
                 className="bg-primary/10 text-primary border-primary/30 border hover:bg-primary/20 transition-all font-bold tracking-widest uppercase text-[10px] h-10 px-6 rounded-xl"
               >
                 <Upload className="h-4 w-4 mr-2" />
@@ -566,7 +576,7 @@ export default function Dashboard() {
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
               <div className="space-y-1">
                 <h2 className="text-3xl font-black tracking-tighter uppercase text-white leading-none">
-                  {activeTab === 'dashboard' ? 'Operational Hub' : activeTab + ' Unit'}
+                  {activeTab === 'dashboard' ? 'Operational Hub' : activeTab.toUpperCase() + ' UNIT'}
                 </h2>
                 <p className="text-muted-foreground/60 text-xs font-medium tracking-widest uppercase">
                   {isDbLoading ? "Decrypting stream..." : `Analyzing ${filteredStudents.length} active research nodes`}
