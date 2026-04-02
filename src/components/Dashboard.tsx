@@ -66,6 +66,10 @@ const MISSION_OBJECTIVES = [
   "National Objective Compliance"
 ];
 
+/**
+ * @fileOverview Main Dashboard component representing the "A to Z" Intelligence System.
+ * Handles state persistence, data synchronization, and unit navigation.
+ */
 export default function Dashboard() {
   const [mounted, setMounted] = useState(false)
   const { firestore: db, user: currentUser, isUserLoading: loadingAuth } = useFirebase();
@@ -84,7 +88,7 @@ export default function Dashboard() {
 
   const { toast } = useToast()
 
-  // Register User as Admin or Update Last Seen
+  // Register User as Admin or Update Last Seen on Mount
   useEffect(() => {
     if (currentUser && db) {
       const adminRef = doc(db, "admin_users", currentUser.uid);
@@ -97,7 +101,7 @@ export default function Dashboard() {
     }
   }, [currentUser, db]);
 
-  // Theme Management
+  // Theme Management Effect
   useEffect(() => {
     const root = window.document.documentElement;
     root.classList.remove("light", "dark");
@@ -110,6 +114,7 @@ export default function Dashboard() {
     }
   }, [theme]);
 
+  // Load Admin Profile from Firestore
   const adminDocRef = useMemoFirebase(() => {
     if (!db || !currentUser) return null;
     return doc(db, "admin_users", currentUser.uid);
@@ -117,7 +122,7 @@ export default function Dashboard() {
 
   const { data: adminProfile, isLoading: isAdminLoading } = useDoc(adminDocRef);
 
-  // Sync Settings from DB once loaded
+  // Sync Settings from DB once profile data is available
   useEffect(() => {
     if (adminProfile) {
       if (adminProfile.theme) setTheme(adminProfile.theme as any);
@@ -128,6 +133,7 @@ export default function Dashboard() {
     }
   }, [adminProfile]);
 
+  // Fetch Live Students Collection
   const studentsQuery = useMemoFirebase(() => {
     if (!db) return null;
     return collection(db, "students");
@@ -135,7 +141,7 @@ export default function Dashboard() {
 
   const { data: dbStudents, isLoading: isDbLoading } = useCollection<Student>(studentsQuery);
 
-  // Auto-Sync Initialization: If collection is empty and autoSync is on
+  // Auto-Sync Protocol: Restores research nodes if database is empty
   useEffect(() => {
     if (mounted && !isDbLoading && dbStudents && dbStudents.length === 0 && autoSync && db && currentUser) {
       const mockData = generateMockStudents(20);
@@ -209,6 +215,7 @@ export default function Dashboard() {
 
   const students = useMemo(() => dbStudents || [], [dbStudents]);
 
+  // Global Multi-Dimensional Filtering Logic
   const filteredStudents = useMemo(() => {
     return students.filter(student => {
       if (filters.gender && student.gender !== filters.gender) return false
@@ -231,6 +238,7 @@ export default function Dashboard() {
     })
   }, [students, filters, searchQuery])
 
+  // Calculated Operational Metrics
   const stats = useMemo(() => ({
     attendance: Math.round(filteredStudents.reduce((acc, s) => acc + s.attendancePercentage, 0) / (filteredStudents.length || 1)),
     avgScore: (filteredStudents.reduce((acc, s) => acc + s.averageScorePercentage, 0) / (filteredStudents.length || 1)).toFixed(1),
@@ -264,7 +272,7 @@ export default function Dashboard() {
       case 'dashboard':
         return (
           <div className="space-y-6 animate-in fade-in duration-700">
-            {/* Quick Metrics */}
+            {/* Operational Metrics Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {[
                 { label: 'Attendance', value: `${stats.attendance}%`, icon: Zap, color: 'text-primary' },
@@ -323,7 +331,7 @@ export default function Dashboard() {
                   {topPerformers.length > 0 ? topPerformers.map((student) => (
                     <div key={student.id} className="flex items-center justify-between group cursor-pointer hover:bg-white/5 p-2 rounded-lg transition-colors">
                       <div className="flex items-center gap-3">
-                        <StudentAvatar name={student.name} className="h-10 w-10 ring-1 ring-primary/30" />
+                        <StudentAvatar name={student.name} status={student.status} className="h-10 w-10 ring-1 ring-primary/30" />
                         <div>
                           <p className="text-sm font-bold group-hover:text-primary transition-colors">{student.name}</p>
                           <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{student.tags[0]}</p>
