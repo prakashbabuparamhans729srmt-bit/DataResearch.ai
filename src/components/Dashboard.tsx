@@ -57,13 +57,17 @@ const navigation = [
   { id: 'settings', name: 'Control Panel', icon: Settings },
 ]
 
-const MISSION_OBJECTIVES = [
+const MISSION_INDIA_OBJECTIVES = [
   "Data-driven education for India",
   "Real-time performance analytics",
   "AI-driven insights for teachers",
   "Bridge the rural-urban gap",
-  "Skill development monitoring",
-  "National Objective Compliance"
+  "Improve attendance patterns",
+  "Support NEP 2020 goals",
+  "Track skill development",
+  "Multilingual India support",
+  "Secure data (DPDP compliance)",
+  "Talent identification protocol"
 ];
 
 /**
@@ -96,7 +100,8 @@ export default function Dashboard() {
         uid: currentUser.uid,
         displayName: currentUser.displayName || "Research Admin",
         email: currentUser.email,
-        lastSeen: new Date().toISOString()
+        lastSeen: new Date().toISOString(),
+        role: "A to Z Administrator"
       }, { merge: true });
     }
   }, [currentUser, db]);
@@ -192,8 +197,8 @@ export default function Dashboard() {
     setTimeout(() => {
       setIsSavingConfig(false);
       toast({
-        title: "Configuration Saved",
-        description: "A to Z System settings have been encrypted and uploaded.",
+        title: "A to Z Configuration Saved",
+        description: "System protocols have been encrypted and uploaded to the cloud.",
       });
     }, 800);
   };
@@ -205,7 +210,7 @@ export default function Dashboard() {
     });
     setTimeout(() => {
       toast({
-        title: "Download Initiated",
+        title: "A to Z Download Initiated",
         description: "The research archive has been transferred successfully.",
         variant: "default"
       });
@@ -259,8 +264,8 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="text-center">
-            <h3 className="text-xl font-bold tracking-widest text-primary neon-text uppercase italic">Establishing Link</h3>
-            <p className="text-xs text-muted-foreground mt-1 uppercase tracking-widest">Verifying A to Z Protocols...</p>
+            <h3 className="text-xl font-bold tracking-widest text-primary neon-text uppercase italic">Establishing A to Z Link</h3>
+            <p className="text-xs text-muted-foreground mt-1 uppercase tracking-widest font-mono">Verifying Neural Protocols...</p>
           </div>
         </div>
       )
@@ -298,22 +303,26 @@ export default function Dashboard() {
               <PerformanceTrend students={filteredStudents} />
               <Card className="glass-card">
                 <CardHeader>
-                  <CardTitle className="text-sm font-bold tracking-widest uppercase text-primary">Strategic Objectives</CardTitle>
+                  <CardTitle className="text-sm font-bold tracking-widest uppercase text-primary">A to Z National Objectives</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  {MISSION_OBJECTIVES.map((obj, i) => (
+                <CardContent className="space-y-3">
+                  {MISSION_INDIA_OBJECTIVES.map((obj, i) => (
                     <div key={i} className="flex items-center gap-3 group">
                       <div className="h-1.5 w-1.5 rounded-full bg-primary neon-glow" />
-                      <span className="text-xs text-muted-foreground font-medium group-hover:text-foreground transition-colors">{obj}</span>
+                      <span className="text-[11px] text-muted-foreground font-medium group-hover:text-foreground transition-colors">{obj}</span>
                     </div>
                   ))}
                   <Separator className="bg-white/5 my-2" />
                   <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
                     <div className="flex items-center gap-2">
                       <Activity className="h-3 w-3 text-primary" />
-                      <p className="text-[10px] text-primary/70 uppercase tracking-widest font-bold">Flow Status</p>
+                      <p className="text-[10px] text-primary/70 uppercase tracking-widest font-bold">System Status</p>
                     </div>
-                    <p className="text-xs mt-1 leading-relaxed">System is currently processing {filteredStudents.length} nodes with 100% integrity across all research channels.</p>
+                    <p className="text-xs mt-1 leading-relaxed text-muted-foreground font-mono">
+                      LINK: ACTIVE<br/>
+                      NODES: {filteredStudents.length}<br/>
+                      INTEGRITY: 100%
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -371,8 +380,8 @@ export default function Dashboard() {
               <PerformanceTrend students={filteredStudents} />
               <Card className="glass-card">
                 <CardHeader>
-                  <CardTitle className="text-primary tracking-widest uppercase">Faculty Efficiency</CardTitle>
-                  <CardDescription className="text-muted-foreground/60">Live cross-departmental analytics</CardDescription>
+                  <CardTitle className="text-primary tracking-widest uppercase text-sm font-bold">A to Z Faculty Efficiency</CardTitle>
+                  <CardDescription className="text-muted-foreground/60 text-[10px] uppercase tracking-widest">Live cross-departmental analytics</CardDescription>
                 </CardHeader>
                 <CardContent className="pt-6 space-y-6">
                   {['Science', 'Arts', 'Commerce'].map(tag => {
@@ -407,8 +416,8 @@ export default function Dashboard() {
              <Card className="glass-card">
                <CardHeader className="flex flex-row items-center justify-between">
                  <div>
-                   <CardTitle className="text-primary tracking-widest uppercase">Research Archive</CardTitle>
-                   <CardDescription className="text-muted-foreground/60">Encrypted data summaries and insights</CardDescription>
+                   <CardTitle className="text-primary tracking-widest uppercase text-sm font-bold">Research Archive Vault</CardTitle>
+                   <CardDescription className="text-muted-foreground/60 text-[10px] uppercase tracking-widest">Encrypted A to Z summaries and insights</CardDescription>
                  </div>
                  <div className="bg-primary/10 p-3 rounded-xl border border-primary/20">
                    <FileText className="h-6 w-6 text-primary" />
@@ -455,7 +464,7 @@ export default function Dashboard() {
                 </div>
                 <div className="pl-28">
                   <CardTitle className="text-xl font-bold">{currentUser?.displayName || "Research Director"}</CardTitle>
-                  <CardDescription className="text-primary neon-text font-bold text-[10px] uppercase tracking-[0.2em]">Current Security: {securityLevel}</CardDescription>
+                  <CardDescription className="text-primary neon-text font-bold text-[10px] uppercase tracking-[0.2em]">A to Z Security: {securityLevel}</CardDescription>
                 </div>
               </CardHeader>
               <CardContent className="space-y-8">
@@ -475,7 +484,7 @@ export default function Dashboard() {
                   </div>
                   <div className="space-y-4">
                     <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-                      <Settings className="h-3 w-3" /> Protocol Config
+                      <Settings className="h-3 w-3" /> A to Z Protocol Config
                     </h4>
                     <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5 hover:border-primary/20 transition-all">
                       <span className="text-xs font-medium">Auto-Sync Nodes</span>
@@ -561,7 +570,7 @@ export default function Dashboard() {
                 <div className="flex justify-end gap-3 pt-4">
                   <Button variant="outline" onClick={() => toast({ title: "Archive Export", description: "Compiling research logs for download..." })} className="border-white/10 hover:bg-white/5 uppercase tracking-widest font-bold text-[10px]">
                     <Database className="h-3 w-3 mr-2" />
-                    Export Telemetry
+                    Export A to Z Telemetry
                   </Button>
                   <Button disabled={isSavingConfig} onClick={handleSaveSettings} className="bg-primary text-black hover:bg-primary/80 uppercase tracking-widest font-bold text-[10px] neon-glow">
                     {isSavingConfig ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3 mr-2" />}
@@ -619,7 +628,7 @@ export default function Dashboard() {
             </SidebarGroup>
             
             <SidebarGroup className="mt-6">
-              <SidebarGroupLabel className="text-[9px] uppercase tracking-[0.2em] font-bold text-primary/50 px-4 mb-2">Faculty Overrides</SidebarGroupLabel>
+              <SidebarGroupLabel className="text-[9px] uppercase tracking-[0.2em] font-bold text-primary/50 px-4 mb-2">A to Z Overrides</SidebarGroupLabel>
               <SidebarGroupContent>
                 <div className="px-4 space-y-4">
                   <div className="flex flex-col gap-2">
@@ -650,7 +659,7 @@ export default function Dashboard() {
                     className="w-full text-[9px] uppercase tracking-widest font-bold text-muted-foreground hover:text-primary transition-colors h-8"
                     onClick={() => setFilters({})}
                   >
-                    Clear All Overrides
+                    Clear All Filters
                   </Button>
                 </div>
               </SidebarGroupContent>
@@ -715,7 +724,7 @@ export default function Dashboard() {
               <div className="flex gap-2">
                 <div className="bg-primary/10 text-primary border border-primary/20 px-4 py-2 rounded-xl flex items-center gap-2 group cursor-default transition-all hover:bg-primary/20">
                   <CheckCircle2 className="h-4 w-4" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest">A to Z System Integrity: 100%</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest">A to Z Integrity: 100%</span>
                 </div>
               </div>
             </div>
