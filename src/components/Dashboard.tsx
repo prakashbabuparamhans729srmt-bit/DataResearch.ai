@@ -28,7 +28,8 @@ import {
   Globe,
   Lock,
   Activity,
-  ArrowRight
+  ArrowRight,
+  Fingerprint
 } from "lucide-react"
 import { generateMockStudents, type Student } from "@/lib/mock-data"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
@@ -723,7 +724,7 @@ export default function Dashboard() {
               </div>
               <div className="flex gap-2">
                 <div className="bg-primary/10 text-primary border border-primary/20 px-4 py-2 rounded-xl flex items-center gap-2 group cursor-default transition-all hover:bg-primary/20">
-                  <CheckCircle2 className="h-4 w-4" />
+                  <Fingerprint className="h-4 w-4" />
                   <span className="text-[10px] font-bold uppercase tracking-widest">A to Z Integrity: 100%</span>
                 </div>
               </div>
