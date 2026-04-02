@@ -27,9 +27,8 @@ import {
   Database,
   Globe,
   Lock,
-  ListChecks,
-  Info,
-  Activity
+  Activity,
+  ArrowRight
 } from "lucide-react"
 import { generateMockStudents, type Student } from "@/lib/mock-data"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
@@ -69,7 +68,7 @@ const MISSION_OBJECTIVES = [
 
 /**
  * @fileOverview Main Dashboard component representing the "A to Z" Intelligence System.
- * Handles state persistence, data synchronization, and unit navigation.
+ * Fully activated with Firestore persistence and Mission Control logic.
  */
 export default function Dashboard() {
   const [mounted, setMounted] = useState(false)
@@ -79,7 +78,7 @@ export default function Dashboard() {
   const [filters, setFilters] = useState<GenerativeVoiceSearchOutput>({})
   const [searchQuery, setSearchQuery] = useState("")
   
-  // Settings States
+  // Settings States (Synced with Firestore)
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('dark')
   const [autoSync, setAutoSync] = useState(true)
   const [neuralInsights, setNeuralInsights] = useState(true)
@@ -89,7 +88,7 @@ export default function Dashboard() {
 
   const { toast } = useToast()
 
-  // Register User as Admin or Update Last Seen on Mount
+  // Protocol: Auto-register user as admin and track telemetry
   useEffect(() => {
     if (currentUser && db) {
       const adminRef = doc(db, "admin_users", currentUser.uid);
@@ -102,11 +101,10 @@ export default function Dashboard() {
     }
   }, [currentUser, db]);
 
-  // Theme Management Effect
+  // A to Z Theme Protocol
   useEffect(() => {
     const root = window.document.documentElement;
     root.classList.remove("light", "dark");
-
     if (theme === "system") {
       const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
       root.classList.add(systemTheme);
@@ -115,7 +113,7 @@ export default function Dashboard() {
     }
   }, [theme]);
 
-  // Load Admin Profile from Firestore
+  // Establish Cloud Link to Admin Profile
   const adminDocRef = useMemoFirebase(() => {
     if (!db || !currentUser) return null;
     return doc(db, "admin_users", currentUser.uid);
@@ -123,7 +121,7 @@ export default function Dashboard() {
 
   const { data: adminProfile, isLoading: isAdminLoading } = useDoc(adminDocRef);
 
-  // Sync Settings from DB once profile data is available
+  // Sync Global Settings from Cloud
   useEffect(() => {
     if (adminProfile) {
       if (adminProfile.theme) setTheme(adminProfile.theme as any);
@@ -134,7 +132,7 @@ export default function Dashboard() {
     }
   }, [adminProfile]);
 
-  // Fetch Live Students Collection
+  // Fetch Real-Time Student Stream
   const studentsQuery = useMemoFirebase(() => {
     if (!db) return null;
     return collection(db, "students");
@@ -142,7 +140,7 @@ export default function Dashboard() {
 
   const { data: dbStudents, isLoading: isDbLoading } = useCollection<Student>(studentsQuery);
 
-  // Auto-Sync Protocol: Restores research nodes if database is empty
+  // Autonomous Sync: Restores nodes if directory is empty
   useEffect(() => {
     if (mounted && !isDbLoading && dbStudents && dbStudents.length === 0 && autoSync && db && currentUser) {
       const mockData = generateMockStudents(20);
@@ -152,8 +150,8 @@ export default function Dashboard() {
         setDocumentNonBlocking(studentRef, student, { merge: true });
       });
       toast({
-        title: "A to Z Auto-Sync Active",
-        description: "Restoring 20 intelligence nodes from cloud backup.",
+        title: "A to Z Auto-Sync Complete",
+        description: "Successfully restored 20 intelligence nodes from secure cloud backup.",
       });
     }
   }, [mounted, isDbLoading, dbStudents, autoSync, db, currentUser]);
@@ -164,11 +162,11 @@ export default function Dashboard() {
 
   const handleSeedData = () => {
     if (!db || !currentUser) {
-      toast({ variant: "destructive", title: "Access Denied", description: "Authorization system initializing." });
+      toast({ variant: "destructive", title: "Access Denied", description: "Authorization link failed." });
       return;
     }
     const mockData = generateMockStudents(20);
-    toast({ title: "Initializing Research", description: "Injecting 20 secure records into Firestore" });
+    toast({ title: "Initializing Data Link", description: "Injecting secure records into the student directory." });
     
     const studentsCol = collection(db, "students");
     mockData.forEach(student => {
@@ -194,21 +192,21 @@ export default function Dashboard() {
     setTimeout(() => {
       setIsSavingConfig(false);
       toast({
-        title: "A to Z Protocol Updated",
-        description: "Configuration has been securely saved to the cloud.",
+        title: "Configuration Saved",
+        description: "A to Z System settings have been encrypted and uploaded.",
       });
     }, 800);
   };
 
   const handleReportDownload = (reportName: string) => {
     toast({
-      title: "Establishing Secure Link",
-      description: `Preparing ${reportName} for download...`,
+      title: "Establishing Archive Link",
+      description: `Decrypting ${reportName} for download...`,
     });
     setTimeout(() => {
       toast({
-        title: "Archive Decrypted",
-        description: "Download initiated via secure protocol.",
+        title: "Download Initiated",
+        description: "The research archive has been transferred successfully.",
         variant: "default"
       });
     }, 1500);
@@ -216,7 +214,7 @@ export default function Dashboard() {
 
   const students = useMemo(() => dbStudents || [], [dbStudents]);
 
-  // Global Multi-Dimensional Filtering Logic
+  // Multi-Dimensional Filtering Protocol
   const filteredStudents = useMemo(() => {
     return students.filter(student => {
       if (filters.gender && student.gender !== filters.gender) return false
@@ -234,7 +232,6 @@ export default function Dashboard() {
         const matchesTags = student.tags.some(t => t.toLowerCase().includes(searchStr));
         if (!matchesName && !matchesId && !matchesTags) return false;
       }
-      
       return true
     })
   }, [students, filters, searchQuery])
@@ -262,8 +259,8 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="text-center">
-            <h3 className="text-xl font-bold tracking-widest text-primary neon-text uppercase">A to Z System Booting</h3>
-            <p className="text-sm text-muted-foreground mt-1">Verifying secure administrative protocols...</p>
+            <h3 className="text-xl font-bold tracking-widest text-primary neon-text uppercase italic">Establishing Link</h3>
+            <p className="text-xs text-muted-foreground mt-1 uppercase tracking-widest">Verifying A to Z Protocols...</p>
           </div>
         </div>
       )
@@ -273,19 +270,18 @@ export default function Dashboard() {
       case 'dashboard':
         return (
           <div className="space-y-6 animate-in fade-in duration-700">
-            {/* Operational Metrics Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {[
-                { label: 'Attendance', value: `${stats.attendance}%`, icon: Zap, color: 'text-primary' },
-                { label: 'Avg Score', value: stats.avgScore, icon: TrendingUp, color: 'text-primary' },
-                { label: 'Completion', value: `${stats.completion}%`, icon: Target, color: 'text-primary' },
-                { label: 'Rankings', value: filteredStudents.length > 0 ? `#${filteredStudents[0]?.rank || 1}` : 'N/A', icon: Trophy, color: 'text-primary' },
+                { label: 'System Presence', value: `${stats.attendance}%`, icon: Zap },
+                { label: 'Intel Accuracy', value: stats.avgScore, icon: TrendingUp },
+                { label: 'Mission Completion', value: `${stats.completion}%`, icon: Target },
+                { label: 'Elite Ranking', value: filteredStudents.length > 0 ? `#${filteredStudents[0]?.rank || 1}` : 'N/A', icon: Trophy },
               ].map((stat) => (
                 <Card key={stat.label} className="glass-card hover:translate-y-[-4px] transition-all duration-300 group">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                        <stat.icon className={cn("h-6 w-6", stat.color)} />
+                        <stat.icon className="h-6 w-6 text-primary" />
                       </div>
                       <MoreVertical className="h-4 w-4 text-muted-foreground" />
                     </div>
@@ -302,12 +298,12 @@ export default function Dashboard() {
               <PerformanceTrend students={filteredStudents} />
               <Card className="glass-card">
                 <CardHeader>
-                  <CardTitle className="text-sm font-bold tracking-widest uppercase text-primary">Mission India Objectives</CardTitle>
+                  <CardTitle className="text-sm font-bold tracking-widest uppercase text-primary">Strategic Objectives</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {MISSION_OBJECTIVES.map((obj, i) => (
                     <div key={i} className="flex items-center gap-3 group">
-                      <div className="h-2 w-2 rounded-full bg-primary neon-glow" />
+                      <div className="h-1.5 w-1.5 rounded-full bg-primary neon-glow" />
                       <span className="text-xs text-muted-foreground font-medium group-hover:text-foreground transition-colors">{obj}</span>
                     </div>
                   ))}
@@ -315,9 +311,9 @@ export default function Dashboard() {
                   <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
                     <div className="flex items-center gap-2">
                       <Activity className="h-3 w-3 text-primary" />
-                      <p className="text-[10px] text-primary/70 uppercase tracking-widest font-bold">A to Z Intelligence</p>
+                      <p className="text-[10px] text-primary/70 uppercase tracking-widest font-bold">Flow Status</p>
                     </div>
-                    <p className="text-xs mt-1 leading-relaxed">System monitoring {filteredStudents.length} nodes across 8 categories with 100% integrity.</p>
+                    <p className="text-xs mt-1 leading-relaxed">System is currently processing {filteredStudents.length} nodes with 100% integrity across all research channels.</p>
                   </div>
                 </CardContent>
               </Card>
@@ -326,10 +322,13 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2">
                 <StudentTable students={filteredStudents.slice(0, 5)} />
+                <Button variant="ghost" className="w-full mt-4 text-[10px] uppercase tracking-widest font-bold text-primary hover:bg-primary/5" onClick={() => setActiveTab('students')}>
+                  View Full Records Directory <ArrowRight className="ml-2 h-3 w-3" />
+                </Button>
               </div>
               <Card className="glass-card">
                 <CardHeader>
-                  <CardTitle className="text-sm font-bold tracking-widest uppercase text-primary">Elite Performers</CardTitle>
+                  <CardTitle className="text-sm font-bold tracking-widest uppercase text-primary">Top Research Nodes</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-5">
                   {topPerformers.length > 0 ? topPerformers.map((student) => (
@@ -348,8 +347,8 @@ export default function Dashboard() {
                   )) : (
                     <div className="py-10 text-center space-y-4">
                       <AlertCircle className="h-10 w-10 text-primary/40 mx-auto" />
-                      <p className="text-xs text-muted-foreground tracking-widest uppercase">Database Empty</p>
-                      <Button variant="outline" size="sm" onClick={handleSeedData} className="border-primary/50 text-primary hover:bg-primary/10">Initialize Nodes</Button>
+                      <p className="text-xs text-muted-foreground tracking-widest uppercase">Database Offline</p>
+                      <Button variant="outline" size="sm" onClick={handleSeedData} className="border-primary/50 text-primary hover:bg-primary/10">Re-Initialize Nodes</Button>
                     </div>
                   )}
                 </CardContent>
@@ -372,8 +371,8 @@ export default function Dashboard() {
               <PerformanceTrend students={filteredStudents} />
               <Card className="glass-card">
                 <CardHeader>
-                  <CardTitle className="text-primary tracking-widest uppercase">Intelligence breakdown</CardTitle>
-                  <CardDescription className="text-muted-foreground/60">Departmental efficiency analysis</CardDescription>
+                  <CardTitle className="text-primary tracking-widest uppercase">Faculty Efficiency</CardTitle>
+                  <CardDescription className="text-muted-foreground/60">Live cross-departmental analytics</CardDescription>
                 </CardHeader>
                 <CardContent className="pt-6 space-y-6">
                   {['Science', 'Arts', 'Commerce'].map(tag => {
@@ -384,10 +383,10 @@ export default function Dashboard() {
                     return (
                       <div key={tag} className="space-y-2">
                         <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
-                          <span>{tag} Faculty</span>
+                          <span>{tag} Department</span>
                           <span className="text-primary">{tagEfficiency}%</span>
                         </div>
-                        <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden p-[1px] border border-white/10">
+                        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/10">
                           <div 
                             className="h-full bg-primary neon-glow rounded-full transition-all duration-1000" 
                             style={{ width: `${tagEfficiency}%` }}
@@ -408,24 +407,24 @@ export default function Dashboard() {
              <Card className="glass-card">
                <CardHeader className="flex flex-row items-center justify-between">
                  <div>
-                   <CardTitle className="text-primary tracking-widest uppercase">Data Research Archive</CardTitle>
-                   <CardDescription className="text-muted-foreground/60">Encrypted academic summaries and datasets</CardDescription>
+                   <CardTitle className="text-primary tracking-widest uppercase">Research Archive</CardTitle>
+                   <CardDescription className="text-muted-foreground/60">Encrypted data summaries and insights</CardDescription>
                  </div>
-                 <div className="bg-primary/10 p-3 rounded-xl">
-                   <FileText className="h-8 w-8 text-primary" />
+                 <div className="bg-primary/10 p-3 rounded-xl border border-primary/20">
+                   <FileText className="h-6 w-6 text-primary" />
                  </div>
                </CardHeader>
                <CardContent className="grid md:grid-cols-2 gap-4">
                  {[
-                   { name: 'Monthly Performance Summary', date: 'Oct 2023', size: '2.4 MB', type: 'Intel' },
-                   { name: 'Attendance Correlation Study', date: 'Sep 2023', size: '1.8 MB', type: 'Research' },
-                   { name: 'Student Growth Analysis', date: 'Aug 2023', size: '3.1 MB', type: 'Internal' },
-                   { name: 'Global Benchmark Report', date: 'July 2023', size: '5.2 MB', type: 'External' },
+                   { name: 'National Performance Audit', date: 'Oct 2023', size: '2.4 MB', type: 'Official' },
+                   { name: 'Rural Education Efficiency', date: 'Sep 2023', size: '1.8 MB', type: 'Research' },
+                   { name: 'Skill Growth Projection', date: 'Aug 2023', size: '3.1 MB', type: 'Internal' },
+                   { name: 'A to Z System Log', date: 'July 2023', size: '5.2 MB', type: 'Audit' },
                  ].map((report, i) => (
                    <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-all border border-white/5 group">
                      <div className="flex items-center gap-4">
                         <button onClick={() => handleReportDownload(report.name)} className="bg-primary/20 p-2 rounded-lg group-hover:scale-110 transition-transform">
-                          <Download className="h-5 w-5 text-primary" />
+                          <Download className="h-4 w-4 text-primary" />
                         </button>
                         <div>
                           <p className="text-sm font-bold group-hover:text-primary transition-colors">{report.name}</p>
@@ -447,7 +446,7 @@ export default function Dashboard() {
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-transparent" />
                 <div className="absolute top-4 right-6 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 flex items-center gap-2">
                   <ShieldCheck className="h-3 w-3 text-primary" />
-                  <span className="text-[9px] font-bold uppercase tracking-widest">A to Z Active Mode</span>
+                  <span className="text-[9px] font-bold uppercase tracking-widest">A to Z Active System</span>
                 </div>
               </div>
               <CardHeader className="relative pb-10">
@@ -456,30 +455,30 @@ export default function Dashboard() {
                 </div>
                 <div className="pl-28">
                   <CardTitle className="text-xl font-bold">{currentUser?.displayName || "Research Director"}</CardTitle>
-                  <CardDescription className="text-primary neon-text font-bold text-[10px] uppercase tracking-[0.2em]">Security Protocol: {securityLevel}</CardDescription>
+                  <CardDescription className="text-primary neon-text font-bold text-[10px] uppercase tracking-[0.2em]">Current Security: {securityLevel}</CardDescription>
                 </div>
               </CardHeader>
               <CardContent className="space-y-8">
                 <div className="grid md:grid-cols-2 gap-8">
                   <div className="space-y-4">
                     <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-                      <Users className="h-3 w-3" /> Core Identity
+                      <Users className="h-3 w-3" /> Identity Access
                     </h4>
                     <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground">Admin UID</p>
+                      <p className="text-xs text-muted-foreground">System ID</p>
                       <p className="text-sm font-mono bg-white/5 p-2 rounded border border-white/5 truncate">{currentUser?.uid}</p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground">Contact Node</p>
+                      <p className="text-xs text-muted-foreground">Admin Mail</p>
                       <p className="text-sm font-mono bg-white/5 p-2 rounded border border-white/5 truncate">{currentUser?.email || "admin@dataresearch.ai"}</p>
                     </div>
                   </div>
                   <div className="space-y-4">
                     <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-                      <Settings className="h-3 w-3" /> System Preferences
+                      <Settings className="h-3 w-3" /> Protocol Config
                     </h4>
                     <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5 hover:border-primary/20 transition-all">
-                      <span className="text-xs font-medium">Auto-Sync Records</span>
+                      <span className="text-xs font-medium">Auto-Sync Nodes</span>
                       <Switch checked={autoSync} onCheckedChange={setAutoSync} className="data-[state=checked]:bg-primary" />
                     </div>
                     <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5 hover:border-primary/20 transition-all">
@@ -492,46 +491,40 @@ export default function Dashboard() {
                 <div className="grid md:grid-cols-2 gap-8">
                   <div className="space-y-4">
                     <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-                      <Globe className="h-3 w-3" /> Language Protocol
+                      <Globe className="h-3 w-3" /> Language Link
                     </h4>
                     <div className="flex items-center gap-4">
-                      {[
-                        { id: 'Hindi', icon: Globe },
-                        { id: 'English', icon: Globe },
-                      ].map((lang) => (
+                      {['Hindi', 'English'].map((lang) => (
                         <button
-                          key={lang.id}
+                          key={lang}
                           className={cn(
                             "flex-1 flex items-center justify-center gap-2 border border-white/10 h-10 rounded-xl font-bold uppercase tracking-widest text-[10px] transition-all",
-                            language === lang.id ? "bg-primary text-black" : "bg-white/5 text-muted-foreground hover:bg-white/10"
+                            language === lang ? "bg-primary text-black" : "bg-white/5 text-muted-foreground hover:bg-white/10"
                           )}
-                          onClick={() => setLanguage(lang.id)}
+                          onClick={() => setLanguage(lang)}
                         >
-                          <lang.icon className="h-3 w-3" />
-                          {lang.id}
+                          <Globe className="h-3 w-3" />
+                          {lang}
                         </button>
                       ))}
                     </div>
                   </div>
                   <div className="space-y-4">
                     <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-                      <Lock className="h-3 w-3" /> Security Level
+                      <Lock className="h-3 w-3" /> Access Protocol
                     </h4>
                     <div className="flex items-center gap-4">
-                      {[
-                        { id: 'Standard', icon: Lock },
-                        { id: 'Omega', icon: Lock },
-                      ].map((lvl) => (
+                      {['Standard', 'Omega'].map((lvl) => (
                         <button
-                          key={lvl.id}
+                          key={lvl}
                           className={cn(
                             "flex-1 flex items-center justify-center gap-2 border border-white/10 h-10 rounded-xl font-bold uppercase tracking-widest text-[10px] transition-all",
-                            securityLevel === lvl.id ? "bg-primary text-black" : "bg-white/5 text-muted-foreground hover:bg-white/10"
+                            securityLevel === lvl ? "bg-primary text-black" : "bg-white/5 text-muted-foreground hover:bg-white/10"
                           )}
-                          onClick={() => setSecurityLevel(lvl.id)}
+                          onClick={() => setSecurityLevel(lvl)}
                         >
-                          <lvl.icon className="h-3 w-3" />
-                          {lvl.id}
+                          <Lock className="h-3 w-3" />
+                          {lvl}
                         </button>
                       ))}
                     </div>
@@ -542,13 +535,13 @@ export default function Dashboard() {
                 
                 <div className="space-y-4">
                   <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-                    <Monitor className="h-3 w-3" /> Appearance Protocol
+                    <Monitor className="h-3 w-3" /> Vision Mode
                   </h4>
                   <div className="flex flex-wrap gap-4">
                     {[
-                      { id: 'light', label: 'Light Mode', icon: Sun },
-                      { id: 'dark', label: 'Dark Mode', icon: Moon },
-                      { id: 'system', label: 'System Default', icon: Monitor },
+                      { id: 'light', label: 'Light', icon: Sun },
+                      { id: 'dark', label: 'Dark', icon: Moon },
+                      { id: 'system', label: 'Auto', icon: Monitor },
                     ].map((m) => (
                       <button
                         key={m.id}
@@ -566,13 +559,13 @@ export default function Dashboard() {
                 </div>
 
                 <div className="flex justify-end gap-3 pt-4">
-                  <Button variant="outline" onClick={() => toast({ title: "Export Started", description: "Securely compiling system logs..." })} className="border-white/10 hover:bg-white/5 uppercase tracking-widest font-bold text-[10px]">
+                  <Button variant="outline" onClick={() => toast({ title: "Archive Export", description: "Compiling research logs for download..." })} className="border-white/10 hover:bg-white/5 uppercase tracking-widest font-bold text-[10px]">
                     <Database className="h-3 w-3 mr-2" />
-                    Export Logs
+                    Export Telemetry
                   </Button>
                   <Button disabled={isSavingConfig} onClick={handleSaveSettings} className="bg-primary text-black hover:bg-primary/80 uppercase tracking-widest font-bold text-[10px] neon-glow">
                     {isSavingConfig ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3 mr-2" />}
-                    Save Configuration
+                    Save A to Z Protocol
                   </Button>
                 </div>
               </CardContent>
@@ -595,13 +588,13 @@ export default function Dashboard() {
               </div>
               <div>
                 <h1 className="text-lg font-bold tracking-tighter leading-none">RESEARCH.<span className="text-primary neon-text">AI</span></h1>
-                <p className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-bold">A to Z Data System</p>
+                <p className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-bold italic">A to Z Intelligence</p>
               </div>
             </div>
           </SidebarHeader>
           <SidebarContent>
             <SidebarGroup>
-              <SidebarGroupLabel className="text-[9px] uppercase tracking-[0.2em] font-bold text-primary/50 px-4 mb-2">System Modules</SidebarGroupLabel>
+              <SidebarGroupLabel className="text-[9px] uppercase tracking-[0.2em] font-bold text-primary/50 px-4 mb-2">Operational Hub</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   {navigation.map((item) => (
@@ -626,7 +619,7 @@ export default function Dashboard() {
             </SidebarGroup>
             
             <SidebarGroup className="mt-6">
-              <SidebarGroupLabel className="text-[9px] uppercase tracking-[0.2em] font-bold text-primary/50 px-4 mb-2">Departmental Filter</SidebarGroupLabel>
+              <SidebarGroupLabel className="text-[9px] uppercase tracking-[0.2em] font-bold text-primary/50 px-4 mb-2">Faculty Overrides</SidebarGroupLabel>
               <SidebarGroupContent>
                 <div className="px-4 space-y-4">
                   <div className="flex flex-col gap-2">
@@ -657,7 +650,7 @@ export default function Dashboard() {
                     className="w-full text-[9px] uppercase tracking-widest font-bold text-muted-foreground hover:text-primary transition-colors h-8"
                     onClick={() => setFilters({})}
                   >
-                    Reset Overrides
+                    Clear All Overrides
                   </Button>
                 </div>
               </SidebarGroupContent>
@@ -670,7 +663,7 @@ export default function Dashboard() {
                 <span className="text-xs font-bold truncate">{currentUser?.displayName || "Research Lead"}</span>
                 <div className="flex items-center gap-1">
                   <div className="h-1.5 w-1.5 rounded-full bg-primary neon-glow animate-pulse" />
-                  <span className="text-[8px] text-primary/80 uppercase tracking-widest font-bold">{adminProfile ? `Status: ${securityLevel}` : 'Syncing...'}</span>
+                  <span className="text-[8px] text-primary/80 uppercase tracking-widest font-bold">Protocol: {securityLevel}</span>
                 </div>
               </div>
             </div>
@@ -704,7 +697,7 @@ export default function Dashboard() {
                 className="bg-primary/10 text-primary border-primary/30 border hover:bg-primary/20 transition-all font-bold tracking-widest uppercase text-[10px] h-10 px-6 rounded-xl"
               >
                 <Upload className="h-4 w-4 mr-2" />
-                <span>Initialize Research</span>
+                <span>Sync Cloud Nodes</span>
               </Button>
             </div>
           </header>
@@ -712,17 +705,17 @@ export default function Dashboard() {
           <main className="flex-1 overflow-y-auto p-8 space-y-8 scroll-smooth">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
               <div className="space-y-1">
-                <h2 className="text-3xl font-black tracking-tighter uppercase text-white leading-none">
+                <h2 className="text-3xl font-black tracking-tighter uppercase text-white leading-none italic">
                   {activeTab === 'dashboard' ? 'Operational Hub' : activeTab.toUpperCase() + ' UNIT'}
                 </h2>
                 <p className="text-muted-foreground/60 text-xs font-medium tracking-widest uppercase">
-                  {isDbLoading ? "Decrypting stream..." : `Analyzing ${filteredStudents.length} active research nodes`}
+                  {isDbLoading ? "Restoring encrypted stream..." : `Analyzing ${filteredStudents.length} active intelligence nodes`}
                 </p>
               </div>
               <div className="flex gap-2">
                 <div className="bg-primary/10 text-primary border border-primary/20 px-4 py-2 rounded-xl flex items-center gap-2 group cursor-default transition-all hover:bg-primary/20">
                   <CheckCircle2 className="h-4 w-4" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest">A to Z Integrity: 100%</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest">A to Z System Integrity: 100%</span>
                 </div>
               </div>
             </div>
