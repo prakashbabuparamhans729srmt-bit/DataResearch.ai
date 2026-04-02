@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
@@ -21,7 +22,9 @@ import {
   ShieldCheck,
   Moon,
   Sun,
-  Monitor
+  Monitor,
+  Save,
+  Database
 } from "lucide-react"
 import { generateMockStudents, type Student } from "@/lib/mock-data"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
@@ -29,6 +32,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { Switch } from "@/components/ui/switch"
 import { StudentTable } from "./StudentTable"
 import { PerformanceTrend } from "./PerformanceChart"
 import { VoiceSearch } from "./VoiceSearch"
@@ -36,7 +40,7 @@ import { AIInsights } from "./AIInsights"
 import { StudentAvatar } from "./StudentAvatar"
 import { Chatbot } from "./Chatbot"
 import { type GenerativeVoiceSearchOutput } from "@/ai/flows/generative-voice-search"
-import { useCollection, useFirebase, useMemoFirebase, initiateAnonymousSignIn, setDocumentNonBlocking, useDoc } from "@/firebase"
+import { useCollection, useFirebase, useMemoFirebase, initiateAnonymousSignIn, setDocumentNonBlocking, useDoc, updateDocumentNonBlocking } from "@/firebase"
 import { collection, doc } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
@@ -57,6 +61,12 @@ export default function Dashboard() {
   const [filters, setFilters] = useState<GenerativeVoiceSearchOutput>({})
   const [searchQuery, setSearchQuery] = useState("")
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('dark')
+  
+  // Settings States
+  const [autoSync, setAutoSync] = useState(true)
+  const [neuralInsights, setNeuralInsights] = useState(true)
+  const [isSavingConfig, setIsSavingConfig] = useState(false)
+
   const { toast } = useToast()
 
   // Initial Authentication
@@ -121,6 +131,34 @@ export default function Dashboard() {
     mockData.forEach(student => {
       const studentRef = doc(studentsCol, student.id);
       setDocumentNonBlocking(studentRef, student, { merge: true });
+    });
+  };
+
+  const handleSaveSettings = () => {
+    if (!db || !currentUser) return;
+    setIsSavingConfig(true);
+    
+    const adminRef = doc(db, "admin_users", currentUser.uid);
+    updateDocumentNonBlocking(adminRef, {
+      autoSync,
+      neuralInsights,
+      theme,
+      updatedAt: new Date().toISOString()
+    });
+
+    setTimeout(() => {
+      setIsSavingConfig(false);
+      toast({
+        title: "Protocol Updated",
+        description: "System configuration has been securely saved to the cloud.",
+      });
+    }, 800);
+  };
+
+  const handleReportDownload = (reportName: string) => {
+    toast({
+      title: "Generating Archive",
+      description: `Preparing ${reportName} for secure download...`,
     });
   };
 
@@ -298,9 +336,9 @@ export default function Dashboard() {
                  ].map((report, i) => (
                    <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-all border border-white/5 group">
                      <div className="flex items-center gap-4">
-                        <div className="bg-primary/20 p-2 rounded-lg group-hover:scale-110 transition-transform">
+                        <button onClick={() => handleReportDownload(report.name)} className="bg-primary/20 p-2 rounded-lg group-hover:scale-110 transition-transform">
                           <Download className="h-5 w-5 text-primary" />
-                        </div>
+                        </button>
                         <div>
                           <p className="text-sm font-bold group-hover:text-primary transition-colors">{report.name}</p>
                           <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{report.date} • {report.size}</p>
@@ -346,11 +384,11 @@ export default function Dashboard() {
                     <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary">System Preferences</h4>
                     <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
                       <span className="text-xs font-medium">Auto-Sync Records</span>
-                      <Badge className="bg-primary/20 text-primary border-primary/40">Active</Badge>
+                      <Switch checked={autoSync} onCheckedChange={setAutoSync} className="data-[state=checked]:bg-primary" />
                     </div>
                     <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
                       <span className="text-xs font-medium">Neural Insights</span>
-                      <Badge className="bg-primary/20 text-primary border-primary/40">Active</Badge>
+                      <Switch checked={neuralInsights} onCheckedChange={setNeuralInsights} className="data-[state=checked]:bg-primary" />
                     </div>
                   </div>
                 </div>
@@ -365,25 +403,30 @@ export default function Dashboard() {
                       { id: 'dark', label: 'Dark Mode', icon: Moon },
                       { id: 'system', label: 'System Default', icon: Monitor },
                     ].map((m) => (
-                      <Button
+                      <button
                         key={m.id}
-                        variant={theme === m.id ? "default" : "outline"}
                         className={cn(
-                          "flex items-center gap-2 border-white/10 h-12 px-6 rounded-xl font-bold uppercase tracking-widest text-[10px]",
-                          theme === m.id && "bg-primary text-black hover:bg-primary/80"
+                          "flex items-center gap-2 border border-white/10 h-12 px-6 rounded-xl font-bold uppercase tracking-widest text-[10px] transition-all",
+                          theme === m.id ? "bg-primary text-black" : "bg-white/5 text-muted-foreground hover:bg-white/10"
                         )}
                         onClick={() => setTheme(m.id as any)}
                       >
                         <m.icon className="h-4 w-4" />
                         {m.label}
-                      </Button>
+                      </button>
                     ))}
                   </div>
                 </div>
 
                 <div className="flex justify-end gap-3 pt-4">
-                  <Button variant="outline" className="border-white/10 hover:bg-white/5 uppercase tracking-widest font-bold text-[10px]">Export Logs</Button>
-                  <Button className="bg-primary text-black hover:bg-primary/80 uppercase tracking-widest font-bold text-[10px]">Save Configuration</Button>
+                  <Button variant="outline" onClick={() => toast({ title: "Export Started", description: "Securely compiling system logs..." })} className="border-white/10 hover:bg-white/5 uppercase tracking-widest font-bold text-[10px]">
+                    <Database className="h-3 w-3 mr-2" />
+                    Export Logs
+                  </Button>
+                  <Button disabled={isSavingConfig} onClick={handleSaveSettings} className="bg-primary text-black hover:bg-primary/80 uppercase tracking-widest font-bold text-[10px]">
+                    {isSavingConfig ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3 mr-2" />}
+                    Save Configuration
+                  </Button>
                 </div>
               </CardContent>
             </Card>
