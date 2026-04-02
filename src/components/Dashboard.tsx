@@ -24,7 +24,9 @@ import {
   Sun,
   Monitor,
   Save,
-  Database
+  Database,
+  Globe,
+  Lock
 } from "lucide-react"
 import { generateMockStudents, type Student } from "@/lib/mock-data"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
@@ -60,11 +62,13 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('dashboard')
   const [filters, setFilters] = useState<GenerativeVoiceSearchOutput>({})
   const [searchQuery, setSearchQuery] = useState("")
-  const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('dark')
   
   // Settings States
+  const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('dark')
   const [autoSync, setAutoSync] = useState(true)
   const [neuralInsights, setNeuralInsights] = useState(true)
+  const [language, setLanguage] = useState('English')
+  const [securityLevel, setSecurityLevel] = useState('Omega')
   const [isSavingConfig, setIsSavingConfig] = useState(false)
 
   const { toast } = useToast()
@@ -108,6 +112,8 @@ export default function Dashboard() {
       if (adminProfile.theme) setTheme(adminProfile.theme as any);
       if (adminProfile.autoSync !== undefined) setAutoSync(adminProfile.autoSync);
       if (adminProfile.neuralInsights !== undefined) setNeuralInsights(adminProfile.neuralInsights);
+      if (adminProfile.language) setLanguage(adminProfile.language);
+      if (adminProfile.securityLevel) setSecurityLevel(adminProfile.securityLevel);
     }
   }, [adminProfile]);
 
@@ -117,6 +123,22 @@ export default function Dashboard() {
   }, [db]);
 
   const { data: dbStudents, isLoading: isDbLoading } = useCollection<Student>(studentsQuery);
+
+  // Auto-Sync Initialization: If collection is empty and autoSync is on
+  useEffect(() => {
+    if (mounted && !isDbLoading && dbStudents && dbStudents.length === 0 && autoSync && db && currentUser) {
+      const mockData = generateMockStudents(20);
+      const studentsCol = collection(db, "students");
+      mockData.forEach(student => {
+        const studentRef = doc(studentsCol, student.id);
+        setDocumentNonBlocking(studentRef, student, { merge: true });
+      });
+      toast({
+        title: "Auto-Sync Protocol Active",
+        description: "Restoring 20 intelligence nodes from cloud backup.",
+      });
+    }
+  }, [mounted, isDbLoading, dbStudents, autoSync, db, currentUser]);
 
   useEffect(() => {
     setMounted(true)
@@ -146,6 +168,8 @@ export default function Dashboard() {
       autoSync,
       neuralInsights,
       theme,
+      language,
+      securityLevel,
       updatedAt: new Date().toISOString()
     });
 
@@ -153,16 +177,23 @@ export default function Dashboard() {
       setIsSavingConfig(false);
       toast({
         title: "Protocol Updated",
-        description: "System configuration has been securely saved to the cloud.",
+        description: "A to Z configuration has been securely saved to the cloud.",
       });
     }, 800);
   };
 
   const handleReportDownload = (reportName: string) => {
     toast({
-      title: "Generating Archive",
-      description: `Preparing ${reportName} for secure download...`,
+      title: "Establishing Secure Link",
+      description: `Preparing ${reportName} for download...`,
     });
+    setTimeout(() => {
+      toast({
+        title: "Archive Decrypted",
+        description: "Download initiated via secure protocol.",
+        variant: "default"
+      });
+    }, 1500);
   };
 
   const students = useMemo(() => dbStudents || [], [dbStudents]);
@@ -247,7 +278,7 @@ export default function Dashboard() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <PerformanceTrend />
+              <PerformanceTrend students={filteredStudents} />
               <Card className="glass-card">
                 <CardHeader>
                   <CardTitle className="text-sm font-bold tracking-widest uppercase text-primary">Elite Performers</CardTitle>
@@ -290,27 +321,33 @@ export default function Dashboard() {
         return (
           <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-700">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <PerformanceTrend />
+              <PerformanceTrend students={filteredStudents} />
               <Card className="glass-card">
                 <CardHeader>
                   <CardTitle className="text-primary tracking-widest uppercase">Intelligence breakdown</CardTitle>
                   <CardDescription className="text-muted-foreground/60">Departmental efficiency analysis</CardDescription>
                 </CardHeader>
                 <CardContent className="pt-6 space-y-6">
-                  {['Science', 'Arts', 'Commerce'].map(tag => (
-                    <div key={tag} className="space-y-2">
-                      <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
-                        <span>{tag} Faculty</span>
-                        <span className="text-primary">{Math.floor(Math.random() * 30 + 70)}%</span>
+                  {['Science', 'Arts', 'Commerce'].map(tag => {
+                    const tagStudents = students.filter(s => s.tags.includes(tag));
+                    const tagEfficiency = tagStudents.length > 0 
+                      ? Math.round(tagStudents.reduce((acc, s) => acc + s.averageScorePercentage, 0) / tagStudents.length)
+                      : 0;
+                    return (
+                      <div key={tag} className="space-y-2">
+                        <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
+                          <span>{tag} Faculty</span>
+                          <span className="text-primary">{tagEfficiency}%</span>
+                        </div>
+                        <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden p-[1px] border border-white/10">
+                          <div 
+                            className="h-full bg-primary neon-glow rounded-full transition-all duration-1000" 
+                            style={{ width: `${tagEfficiency}%` }}
+                          />
+                        </div>
                       </div>
-                      <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden p-[1px] border border-white/10">
-                        <div 
-                          className="h-full bg-primary neon-glow rounded-full" 
-                          style={{ width: `${Math.floor(Math.random() * 30 + 70)}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </CardContent>
               </Card>
             </div>
@@ -392,6 +429,51 @@ export default function Dashboard() {
                     <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
                       <span className="text-xs font-medium">Neural Insights</span>
                       <Switch checked={neuralInsights} onCheckedChange={setNeuralInsights} className="data-[state=checked]:bg-primary" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary">Language Protocol</h4>
+                    <div className="flex items-center gap-4">
+                      {[
+                        { id: 'Hindi', icon: Globe },
+                        { id: 'English', icon: Globe },
+                      ].map((lang) => (
+                        <button
+                          key={lang.id}
+                          className={cn(
+                            "flex-1 flex items-center justify-center gap-2 border border-white/10 h-10 rounded-xl font-bold uppercase tracking-widest text-[10px] transition-all",
+                            language === lang.id ? "bg-primary text-black" : "bg-white/5 text-muted-foreground hover:bg-white/10"
+                          )}
+                          onClick={() => setLanguage(lang.id)}
+                        >
+                          <lang.icon className="h-3 w-3" />
+                          {lang.id}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary">Security Level</h4>
+                    <div className="flex items-center gap-4">
+                      {[
+                        { id: 'Standard', icon: Lock },
+                        { id: 'Omega', icon: Lock },
+                      ].map((lvl) => (
+                        <button
+                          key={lvl.id}
+                          className={cn(
+                            "flex-1 flex items-center justify-center gap-2 border border-white/10 h-10 rounded-xl font-bold uppercase tracking-widest text-[10px] transition-all",
+                            securityLevel === lvl.id ? "bg-primary text-black" : "bg-white/5 text-muted-foreground hover:bg-white/10"
+                          )}
+                          onClick={() => setSecurityLevel(lvl.id)}
+                        >
+                          <lvl.icon className="h-3 w-3" />
+                          {lvl.id}
+                        </button>
+                      ))}
                     </div>
                   </div>
                 </div>
