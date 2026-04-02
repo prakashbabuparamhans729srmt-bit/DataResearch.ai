@@ -40,7 +40,7 @@ import { AIInsights } from "./AIInsights"
 import { StudentAvatar } from "./StudentAvatar"
 import { Chatbot } from "./Chatbot"
 import { type GenerativeVoiceSearchOutput } from "@/ai/flows/generative-voice-search"
-import { useCollection, useFirebase, useMemoFirebase, initiateAnonymousSignIn, setDocumentNonBlocking, useDoc, updateDocumentNonBlocking } from "@/firebase"
+import { useCollection, useFirebase, useMemoFirebase, setDocumentNonBlocking, useDoc, updateDocumentNonBlocking } from "@/firebase"
 import { collection, doc } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
@@ -55,7 +55,7 @@ const navigation = [
 
 export default function Dashboard() {
   const [mounted, setMounted] = useState(false)
-  const { firestore: db, auth, user: currentUser, isUserLoading: loadingAuth } = useFirebase();
+  const { firestore: db, user: currentUser, isUserLoading: loadingAuth } = useFirebase();
 
   const [activeTab, setActiveTab] = useState('dashboard')
   const [filters, setFilters] = useState<GenerativeVoiceSearchOutput>({})
@@ -68,13 +68,6 @@ export default function Dashboard() {
   const [isSavingConfig, setIsSavingConfig] = useState(false)
 
   const { toast } = useToast()
-
-  // Initial Authentication check handled by Root Page, but ensuring session here
-  useEffect(() => {
-    if (!loadingAuth && !currentUser && auth) {
-      initiateAnonymousSignIn(auth);
-    }
-  }, [loadingAuth, currentUser, auth]);
 
   // Register User as Admin or Update Last Seen
   useEffect(() => {
@@ -112,7 +105,7 @@ export default function Dashboard() {
   // Sync Settings from DB once loaded
   useEffect(() => {
     if (adminProfile) {
-      if (adminProfile.theme) setTheme(adminProfile.theme);
+      if (adminProfile.theme) setTheme(adminProfile.theme as any);
       if (adminProfile.autoSync !== undefined) setAutoSync(adminProfile.autoSync);
       if (adminProfile.neuralInsights !== undefined) setNeuralInsights(adminProfile.neuralInsights);
     }
@@ -129,7 +122,7 @@ export default function Dashboard() {
     setMounted(true)
   }, [])
 
-  const handleSeedData = async () => {
+  const handleSeedData = () => {
     if (!db || !currentUser) {
       toast({ variant: "destructive", title: "Access Denied", description: "Authorization system initializing." });
       return;
@@ -321,7 +314,7 @@ export default function Dashboard() {
                 </CardContent>
               </Card>
             </div>
-            <AIInsights students={filteredStudents} />
+            {neuralInsights && <AIInsights students={filteredStudents} />}
           </div>
         )
       case 'reports':
