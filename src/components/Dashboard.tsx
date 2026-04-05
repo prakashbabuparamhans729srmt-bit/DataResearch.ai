@@ -31,7 +31,8 @@ import {
   ArrowRight,
   Fingerprint,
   Cpu,
-  Radio
+  Radio,
+  Network
 } from "lucide-react"
 import { generateMockStudents, type Student } from "@/lib/mock-data"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
@@ -90,7 +91,17 @@ const MISSION_INDIA_OBJECTIVES = [
   "27. Teacher training AI assistants",
   "28. Localized curriculum mapping",
   "29. Extra-curricular talent tracking",
-  "30. Alumni mentorship network link"
+  "30. Alumni mentorship network link",
+  "31. Digital health cards for students",
+  "32. Real-time nutritional tracking",
+  "33. AI-driven aptitude mapping",
+  "34. Community learning circles",
+  "35. Local folklore & cultural integration",
+  "36. Gamified learning achievements",
+  "37. Peer-reviewed research nodes",
+  "38. Sustainable school metrics",
+  "39. Blockchain-based credentialing",
+  "40. Global research exchange link"
 ];
 
 /**
