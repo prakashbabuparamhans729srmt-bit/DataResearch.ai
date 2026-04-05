@@ -114,7 +114,7 @@ export default function Dashboard() {
 
   const { toast } = useToast()
 
-  // Auto-register admin node
+  // Auto-register admin node on first link
   useEffect(() => {
     if (currentUser && db) {
       const adminRef = doc(db, "admin_users", currentUser.uid);
@@ -128,7 +128,7 @@ export default function Dashboard() {
     }
   }, [currentUser, db]);
 
-  // Theme Sync
+  // Theme Sync Protocol
   useEffect(() => {
     const root = window.document.documentElement;
     root.classList.remove("light", "dark");
@@ -147,6 +147,7 @@ export default function Dashboard() {
 
   const { data: adminProfile, isLoading: isAdminLoading } = useDoc(adminDocRef);
 
+  // Sync state from cloud profile
   useEffect(() => {
     if (adminProfile) {
       if (adminProfile.theme) setTheme(adminProfile.theme as any);
@@ -164,7 +165,7 @@ export default function Dashboard() {
 
   const { data: dbStudents, isLoading: isDbLoading } = useCollection<Student>(studentsQuery);
 
-  // Auto-restore nodes
+  // Auto-restore nodes if system is empty and autoSync is active
   useEffect(() => {
     if (mounted && !isDbLoading && dbStudents && dbStudents.length === 0 && autoSync && db && currentUser) {
       const mockData = generateMockStudents(20);
