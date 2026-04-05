@@ -1,224 +1,94 @@
+
 {
   "entities": {
+    "AdminUser": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "AdminUser",
+      "type": "object",
+      "description": "Represents an authorized administrator with system-wide privileges.",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Firebase Auth UID of the administrator."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Public name of the admin."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Email of the admin."
+        },
+        "role": {
+          "type": "string",
+          "description": "System role (e.g., 'A to Z Administrator')."
+        },
+        "theme": {
+          "type": "string",
+          "enum": ["light", "dark", "system"]
+        },
+        "autoSync": {
+          "type": "boolean"
+        },
+        "neuralInsights": {
+          "type": "boolean"
+        },
+        "language": {
+          "type": "string"
+        },
+        "securityLevel": {
+          "type": "string"
+        },
+        "lastSeen": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["uid", "email"]
+    },
     "Student": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Student",
       "type": "object",
-      "description": "Represents a student enrolled in the data research program, including personal details and current performance metrics.",
+      "description": "Represents a student enrolled in the data research program.",
       "properties": {
         "id": {
-          "type": "string",
-          "description": "Unique identifier for the Student entity."
+          "type": "string"
         },
-        "firstName": {
-          "type": "string",
-          "description": "The first name of the student."
-        },
-        "lastName": {
-          "type": "string",
-          "description": "The last name of the student."
-        },
-        "email": {
-          "type": "string",
-          "description": "The email address of the student.",
-          "format": "email"
+        "name": {
+          "type": "string"
         },
         "gender": {
           "type": "string",
-          "description": "The gender of the student (e.g., 'Male', 'Female')."
+          "enum": ["Male", "Female", "Other"]
         },
-        "dateOfBirth": {
-          "type": "string",
-          "description": "The student's date of birth.",
-          "format": "date"
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
         },
-        "enrollmentDate": {
-          "type": "string",
-          "description": "The date when the student was enrolled.",
-          "format": "date"
+        "attendancePercentage": {
+          "type": "number"
+        },
+        "averageScorePercentage": {
+          "type": "number"
+        },
+        "completionPercentage": {
+          "type": "number"
+        },
+        "rank": {
+          "type": "number"
         },
         "status": {
           "type": "string",
-          "description": "The current status of the student (e.g., 'Active', 'Idle')."
+          "enum": ["Active", "Idle"]
         },
-        "profilePictureUrl": {
-          "type": "string",
-          "description": "URL to the student's profile picture.",
-          "format": "uri"
-        },
-        "attendancePercentage": {
-          "type": "number",
-          "description": "Current overall attendance percentage for the student."
-        },
-        "averageScore": {
-          "type": "number",
-          "description": "Current overall average score for the student across all assessments."
-        },
-        "completionRate": {
-          "type": "number",
-          "description": "Current overall completion rate of tasks or courses for the student."
-        },
-        "currentRank": {
-          "type": "number",
-          "description": "The student's current rank relative to other students."
-        },
-        "notes": {
-          "type": "string",
-          "description": "General administrative notes or remarks about the student."
-        },
-        "tagIds": {
+        "trends": {
           "type": "array",
-          "description": "References to AcademicTags associated with the student. (Relationship: Student N:N AcademicTag)",
-          "items": {
-            "type": "string"
-          }
+          "items": { "type": "number" }
         }
       },
-      "required": [
-        "id",
-        "firstName",
-        "lastName",
-        "email",
-        "gender",
-        "enrollmentDate",
-        "status",
-        "attendancePercentage",
-        "averageScore",
-        "completionRate",
-        "currentRank"
-      ]
-    },
-    "AcademicTag": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "AcademicTag",
-      "type": "object",
-      "description": "Represents a category or academic subject tag that can be associated with students for filtering and analysis.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the AcademicTag entity."
-        },
-        "name": {
-          "type": "string",
-          "description": "The name of the academic tag (e.g., 'Science', 'Arts', 'Commerce')."
-        },
-        "description": {
-          "type": "string",
-          "description": "A detailed description of the academic tag."
-        },
-        "studentIds": {
-          "type": "array",
-          "description": "References to Students associated with this tag. (Relationship: AcademicTag N:N Student)",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "required": [
-        "id",
-        "name"
-      ]
-    },
-    "PerformanceSnapshot": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "PerformanceSnapshot",
-      "type": "object",
-      "description": "Captures a student's performance metrics at a specific point in time or over a defined period, used for trend analysis and historical data.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the PerformanceSnapshot entity."
-        },
-        "studentId": {
-          "type": "string",
-          "description": "Reference to the Student this snapshot belongs to. (Relationship: Student 1:N PerformanceSnapshot)"
-        },
-        "snapshotDate": {
-          "type": "string",
-          "description": "The date for which this performance snapshot is recorded, typically end of month/period.",
-          "format": "date"
-        },
-        "attendancePercentage": {
-          "type": "number",
-          "description": "Attendance percentage for the period of this snapshot."
-        },
-        "averageScore": {
-          "type": "number",
-          "description": "Average score for the period of this snapshot."
-        },
-        "completionRate": {
-          "type": "number",
-          "description": "Completion rate for the period of this snapshot."
-        },
-        "passRate": {
-          "type": "number",
-          "description": "The pass rate of the student for the period of this snapshot."
-        },
-        "homeworkCompletionRate": {
-          "type": "number",
-          "description": "The homework completion rate of the student for the period of this snapshot."
-        },
-        "feedbackScore": {
-          "type": "number",
-          "description": "The average feedback score received by the student for the period of this snapshot (e.g., out of 5)."
-        },
-        "improvementRate": {
-          "type": "number",
-          "description": "The rate of improvement for the student over the previous period."
-        }
-      },
-      "required": [
-        "id",
-        "studentId",
-        "snapshotDate",
-        "attendancePercentage",
-        "averageScore",
-        "completionRate",
-        "passRate",
-        "homeworkCompletionRate",
-        "feedbackScore",
-        "improvementRate"
-      ]
-    },
-    "ActivityLog": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "ActivityLog",
-      "type": "object",
-      "description": "Records individual actions or events performed by or related to a student, used for real-time activity streams and auditing.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the ActivityLog entity."
-        },
-        "studentId": {
-          "type": "string",
-          "description": "Reference to the Student associated with this activity. (Relationship: Student 1:N ActivityLog)"
-        },
-        "activityType": {
-          "type": "string",
-          "description": "The type of activity (e.g., 'Assignment Submission', 'Test Started', 'Score Recorded')."
-        },
-        "description": {
-          "type": "string",
-          "description": "A detailed description of the activity event."
-        },
-        "timestamp": {
-          "type": "string",
-          "description": "The date and time when the activity occurred.",
-          "format": "date-time"
-        },
-        "score": {
-          "type": "number",
-          "description": "Optional score if the activity involves scoring (e.g., 'Ankit scored 95%')."
-        }
-      },
-      "required": [
-        "id",
-        "studentId",
-        "activityType",
-        "description",
-        "timestamp"
-      ]
+      "required": ["id", "name", "gender", "attendancePercentage", "averageScorePercentage", "status"]
     }
   },
   "auth": {
@@ -228,96 +98,13 @@
     ]
   },
   "firestore": {
-    "structure": [
-      {
-        "path": "/admin_users/{adminId}",
-        "definition": {
-          "entityName": "adminUser",
-          "schema": {
-            "$ref": "#/backend/entities/adminUser"
-          },
-          "description": "Collection to store documents representing users with administrative privileges. The document ID (`adminId`) corresponds to the Firebase Authentication UID of the administrator. Existence of a document here grants system-wide administrative access. This is used for database access control (DBAC).",
-          "params": [
-            {
-              "name": "adminId",
-              "description": "The unique Firebase Authentication UID of the administrator."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/students/{studentId}",
-        "definition": {
-          "entityName": "Student",
-          "schema": {
-            "$ref": "#/backend/entities/Student"
-          },
-          "description": "Top-level collection for all student records. Each document represents a single student and is identified by `studentId`. Access is restricted to `admin_users`.",
-          "params": [
-            {
-              "name": "studentId",
-              "description": "The unique identifier for the student."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/academic_tags/{tagId}",
-        "definition": {
-          "entityName": "AcademicTag",
-          "schema": {
-            "$ref": "#/backend/entities/AcademicTag"
-          },
-          "description": "Top-level collection for academic tags used to categorize students. Access is restricted to `admin_users`.",
-          "params": [
-            {
-              "name": "tagId",
-              "description": "The unique identifier for the academic tag."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/students/{studentId}/performance_snapshots/{snapshotId}",
-        "definition": {
-          "entityName": "PerformanceSnapshot",
-          "schema": {
-            "$ref": "#/backend/entities/PerformanceSnapshot"
-          },
-          "description": "Subcollection under a specific student, storing historical performance snapshots. The `studentId` is derived from the parent path, ensuring Authorization Independence. Access is restricted to `admin_users`.",
-          "params": [
-            {
-              "name": "studentId",
-              "description": "The unique identifier of the parent student."
-            },
-            {
-              "name": "snapshotId",
-              "description": "The unique identifier for the performance snapshot."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/students/{studentId}/activity_logs/{activityLogId}",
-        "definition": {
-          "entityName": "ActivityLog",
-          "schema": {
-            "$ref": "#/backend/entities/ActivityLog"
-          },
-          "description": "Subcollection under a specific student, recording real-time activity events. The `studentId` is derived from the parent path, ensuring Authorization Independence. Access is restricted to `admin_users`.",
-          "params": [
-            {
-              "name": "studentId",
-              "description": "The unique identifier of the parent student."
-            },
-            {
-              "name": "activityLogId",
-              "description": "The unique identifier for the activity log entry."
-            }
-          ]
-        }
-      }
-    ],
-    "reasoning": "The Firestore data structure for the DataResearch.ai application is designed to support an administrative user model, where authenticated administrators (teachers/researchers) have full access to manage all student-related data. This design prioritizes Authorization Independence, Structural Segregation, and DBAC (Database Access Control) to ensure robust security and efficient rule evaluation.\n\n**Authorization Independence:** The core principle of Authorization Independence is achieved by primarily relying on a top-level administrative role check. Instead of using `get()` calls to check parent document attributes for authorization, access to all student-related data (students, performance snapshots, activity logs) is granted if the requesting user's `uid` exists in the `/admin_users` collection. This means that rules for subcollections like `/students/{studentId}/performance_snapshots/{snapshotId}` do not need to read the parent `/students/{studentId}` document, thereby enabling atomic operations and simplifying rule logic. The `studentId` is explicitly available in the path, making it directly accessible for rules without additional lookups.\n\n**Structural Segregation:** Each collection and subcollection (`/students`, `/academic_tags`, `/students/{studentId}/performance_snapshots`, `/students/{studentId}/activity_logs`) has a homogeneous security posture: full read/write access for authenticated administrators. This avoids mixing data with different access requirements within the same collection, simplifying security rules immensely. For instance, there's no distinction between 'public' and 'private' student data within the same collection; all student data is considered administrative and private.\n\n**QAPs (Rules are not Filters):** This structure inherently supports secure `list` operations. For any collection (e.g., `/students`, `/academic_tags`) or subcollection (e.g., `/students/{studentId}/performance_snapshots`), a `list` operation will succeed only if the `request.auth.uid` is an authenticated admin. This is checked efficiently at the collection level via the `/admin_users` role lookup, ensuring that only authorized users can retrieve collections of documents, rather than relying on inefficient and insecure client-side filtering or rule-based document filtering which Firebase rules are not designed for. The `studentId` in subcollection paths also directly supports targeted and secure `list` queries for a specific student's related data."
+    "/admin_users/{adminId}": {
+      "schema": "#/entities/AdminUser",
+      "description": "System administrators directory."
+    },
+    "/students/{studentId}": {
+      "schema": "#/entities/Student",
+      "description": "Global student research nodes."
+    }
   }
 }

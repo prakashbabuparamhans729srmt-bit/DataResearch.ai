@@ -104,10 +104,6 @@ const MISSION_INDIA_OBJECTIVES = [
   "40. Global research exchange link"
 ];
 
-/**
- * @fileOverview Main Dashboard component representing the "A to Z" Intelligence System.
- * Fully activated with Firestore persistence and Mission Control logic.
- */
 export default function Dashboard() {
   const [mounted, setMounted] = useState(false)
   const { firestore: db, user: currentUser, isUserLoading: loadingAuth } = useFirebase();
@@ -116,7 +112,7 @@ export default function Dashboard() {
   const [filters, setFilters] = useState<GenerativeVoiceSearchOutput>({})
   const [searchQuery, setSearchQuery] = useState("")
   
-  // Settings States (Synced with Firestore)
+  // Settings States
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('dark')
   const [autoSync, setAutoSync] = useState(true)
   const [neuralInsights, setNeuralInsights] = useState(true)
@@ -126,7 +122,7 @@ export default function Dashboard() {
 
   const { toast } = useToast()
 
-  // Protocol: Auto-register user as admin and track telemetry
+  // Auto-register admin node
   useEffect(() => {
     if (currentUser && db) {
       const adminRef = doc(db, "admin_users", currentUser.uid);
@@ -140,7 +136,7 @@ export default function Dashboard() {
     }
   }, [currentUser, db]);
 
-  // A to Z Theme Protocol
+  // Theme Sync
   useEffect(() => {
     const root = window.document.documentElement;
     root.classList.remove("light", "dark");
@@ -152,7 +148,6 @@ export default function Dashboard() {
     }
   }, [theme]);
 
-  // Establish Cloud Link to Admin Profile
   const adminDocRef = useMemoFirebase(() => {
     if (!db || !currentUser) return null;
     return doc(db, "admin_users", currentUser.uid);
@@ -160,7 +155,6 @@ export default function Dashboard() {
 
   const { data: adminProfile, isLoading: isAdminLoading } = useDoc(adminDocRef);
 
-  // Sync Global Settings from Cloud
   useEffect(() => {
     if (adminProfile) {
       if (adminProfile.theme) setTheme(adminProfile.theme as any);
@@ -171,7 +165,6 @@ export default function Dashboard() {
     }
   }, [adminProfile]);
 
-  // Fetch Real-Time Student Stream
   const studentsQuery = useMemoFirebase(() => {
     if (!db) return null;
     return collection(db, "students");
@@ -179,7 +172,7 @@ export default function Dashboard() {
 
   const { data: dbStudents, isLoading: isDbLoading } = useCollection<Student>(studentsQuery);
 
-  // Autonomous Sync: Restores nodes if directory is empty and AutoSync is active
+  // Auto-restore nodes
   useEffect(() => {
     if (mounted && !isDbLoading && dbStudents && dbStudents.length === 0 && autoSync && db && currentUser) {
       const mockData = generateMockStudents(20);
@@ -190,7 +183,7 @@ export default function Dashboard() {
       });
       toast({
         title: "A to Z Auto-Sync Complete",
-        description: "Successfully restored 20 intelligence nodes from secure cloud backup.",
+        description: "Restored 20 intelligence nodes from secure cloud backup.",
       });
     }
   }, [mounted, isDbLoading, dbStudents, autoSync, db, currentUser]);
@@ -205,7 +198,7 @@ export default function Dashboard() {
       return;
     }
     const mockData = generateMockStudents(20);
-    toast({ title: "Initializing Data Link", description: "Injecting secure records into the student directory." });
+    toast({ title: "Initializing Data Link", description: "Injecting secure records into the directory." });
     
     const studentsCol = collection(db, "students");
     mockData.forEach(student => {
@@ -237,23 +230,8 @@ export default function Dashboard() {
     }, 800);
   };
 
-  const handleReportDownload = (reportName: string) => {
-    toast({
-      title: "Establishing Archive Link",
-      description: `Decrypting ${reportName} for download...`,
-    });
-    setTimeout(() => {
-      toast({
-        title: "A to Z Download Initiated",
-        description: "The research archive has been transferred successfully.",
-        variant: "default"
-      });
-    }, 1500);
-  };
-
   const students = useMemo(() => dbStudents || [], [dbStudents]);
 
-  // Multi-Dimensional Filtering Protocol
   const filteredStudents = useMemo(() => {
     return students.filter(student => {
       if (filters.gender && student.gender !== filters.gender) return false
@@ -275,7 +253,6 @@ export default function Dashboard() {
     })
   }, [students, filters, searchQuery])
 
-  // Calculated Operational Metrics
   const stats = useMemo(() => ({
     attendance: Math.round(filteredStudents.reduce((acc, s) => acc + s.attendancePercentage, 0) / (filteredStudents.length || 1)),
     avgScore: (filteredStudents.reduce((acc, s) => acc + s.averageScorePercentage, 0) / (filteredStudents.length || 1)).toFixed(1),
@@ -350,18 +327,6 @@ export default function Dashboard() {
                       </div>
                     ))}
                   </div>
-                  <Separator className="bg-white/5 my-2" />
-                  <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
-                    <div className="flex items-center gap-2">
-                      <Activity className="h-3 w-3 text-primary" />
-                      <p className="text-[10px] text-primary/70 uppercase tracking-widest font-bold">System Status</p>
-                    </div>
-                    <p className="text-xs mt-1 leading-relaxed text-muted-foreground font-mono">
-                      LINK: ACTIVE<br/>
-                      NODES: {filteredStudents.length}<br/>
-                      INTEGRITY: 100%
-                    </p>
-                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -380,7 +345,7 @@ export default function Dashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-5">
-                  {topPerformers.length > 0 ? topPerformers.map((student) => (
+                  {topPerformers.map((student) => (
                     <div key={student.id} className="flex items-center justify-between group cursor-pointer hover:bg-white/5 p-2 rounded-lg transition-colors">
                       <div className="flex items-center gap-3">
                         <StudentAvatar name={student.name} status={student.status} className="h-10 w-10 ring-1 ring-primary/30" />
@@ -393,13 +358,7 @@ export default function Dashboard() {
                         <p className="text-sm font-bold text-primary">{student.averageScorePercentage}%</p>
                       </div>
                     </div>
-                  )) : (
-                    <div className="py-10 text-center space-y-4">
-                      <AlertCircle className="h-10 w-10 text-primary/40 mx-auto" />
-                      <p className="text-xs text-muted-foreground tracking-widest uppercase">Database Offline</p>
-                      <Button variant="outline" size="sm" onClick={handleSeedData} className="border-primary/50 text-primary hover:bg-primary/10">Re-Initialize Nodes</Button>
-                    </div>
-                  )}
+                  ))}
                 </CardContent>
               </Card>
             </div>
@@ -408,11 +367,7 @@ export default function Dashboard() {
           </div>
         )
       case 'students':
-        return (
-          <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-700">
-            <StudentTable students={filteredStudents} />
-          </div>
-        )
+        return <StudentTable students={filteredStudents} />
       case 'analysis':
         return (
           <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-700">
@@ -421,9 +376,8 @@ export default function Dashboard() {
               <Card className="glass-card">
                 <CardHeader>
                   <CardTitle className="text-primary tracking-widest uppercase text-sm font-bold flex items-center gap-2">
-                    <Cpu className="h-4 w-4" /> A to Z Faculty Efficiency
+                    <Cpu className="h-4 w-4" /> Faculty Efficiency Unit
                   </CardTitle>
-                  <CardDescription className="text-muted-foreground/60 text-[10px] uppercase tracking-widest">Live cross-departmental analytics</CardDescription>
                 </CardHeader>
                 <CardContent className="pt-6 space-y-6">
                   {['Science', 'Arts', 'Commerce'].map(tag => {
@@ -459,13 +413,11 @@ export default function Dashboard() {
                <CardHeader className="flex flex-row items-center justify-between">
                  <div>
                    <CardTitle className="text-primary tracking-widest uppercase text-sm font-bold flex items-center gap-2">
-                     <FileText className="h-4 w-4" /> Research Archive Vault
+                     <FileText className="h-4 w-4" /> Archive Vault
                    </CardTitle>
-                   <CardDescription className="text-muted-foreground/60 text-[10px] uppercase tracking-widest">Encrypted A to Z summaries and insights</CardDescription>
+                   <CardDescription className="text-muted-foreground/60 text-[10px] uppercase tracking-widest">Encrypted summaries and insights</CardDescription>
                  </div>
-                 <div className="bg-primary/10 p-3 rounded-xl border border-primary/20">
-                   <Database className="h-6 w-6 text-primary" />
-                 </div>
+                 <Database className="h-6 w-6 text-primary" />
                </CardHeader>
                <CardContent className="grid md:grid-cols-2 gap-4">
                  {[
@@ -476,9 +428,7 @@ export default function Dashboard() {
                  ].map((report, i) => (
                    <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-all border border-white/5 group">
                      <div className="flex items-center gap-4">
-                        <button onClick={() => handleReportDownload(report.name)} className="bg-primary/20 p-2 rounded-lg group-hover:scale-110 transition-transform">
-                          <Download className="h-4 w-4 text-primary" />
-                        </button>
+                        <Download className="h-4 w-4 text-primary" />
                         <div>
                           <p className="text-sm font-bold group-hover:text-primary transition-colors">{report.name}</p>
                           <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{report.date} • {report.size}</p>
@@ -494,47 +444,28 @@ export default function Dashboard() {
       case 'settings':
         return (
           <div className="max-w-3xl mx-auto animate-in slide-in-from-bottom-4 duration-700 space-y-6">
-            <Card className="glass-card overflow-hidden">
-              <div className="h-24 bg-primary/10 relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-transparent" />
-                <div className="absolute top-4 right-6 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 flex items-center gap-2">
-                  <ShieldCheck className="h-3 w-3 text-primary" />
-                  <span className="text-[9px] font-bold uppercase tracking-widest">A to Z Active System</span>
-                </div>
-              </div>
-              <CardHeader className="relative pb-10">
-                <div className="absolute -top-12 left-6">
-                  <StudentAvatar name={currentUser?.displayName || "Research Admin"} className="h-24 w-24 ring-4 ring-background" />
-                </div>
-                <div className="pl-28">
-                  <CardTitle className="text-xl font-bold">{currentUser?.displayName || "Research Director"}</CardTitle>
-                  <CardDescription className="text-primary neon-text font-bold text-[10px] uppercase tracking-[0.2em]">A to Z Security: {securityLevel}</CardDescription>
-                </div>
+            <Card className="glass-card">
+              <CardHeader>
+                <CardTitle className="text-primary tracking-widest uppercase text-sm font-bold flex items-center gap-2">
+                  <Settings className="h-4 w-4" /> A to Z Protocol Config
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-8">
                 <div className="grid md:grid-cols-2 gap-8">
                   <div className="space-y-4">
-                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-                      <Users className="h-3 w-3" /> Identity Access
-                    </h4>
-                    <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground">System ID</p>
-                      <p className="text-sm font-mono bg-white/5 p-2 rounded border border-white/5 truncate">{currentUser?.uid}</p>
-                    </div>
+                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary">Identity Access</h4>
                     <div className="space-y-1">
                       <p className="text-xs text-muted-foreground">Admin Mail</p>
-                      <p className="text-sm font-mono bg-white/5 p-2 rounded border border-white/5 truncate">{currentUser?.email || "admin@dataresearch.ai"}</p>
+                      <p className="text-sm font-mono bg-white/5 p-2 rounded border border-white/5 truncate">{currentUser?.email}</p>
                     </div>
                   </div>
                   <div className="space-y-4">
-                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-                      <Settings className="h-3 w-3" /> A to Z Protocol Config
-                    </h4>
-                    <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5 hover:border-primary/20 transition-all">
+                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary">System Overrides</h4>
+                    <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
                       <span className="text-xs font-medium">Auto-Sync Nodes</span>
                       <Switch checked={autoSync} onCheckedChange={setAutoSync} className="data-[state=checked]:bg-primary" />
                     </div>
-                    <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5 hover:border-primary/20 transition-all">
+                    <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
                       <span className="text-xs font-medium">Neural Insights</span>
                       <Switch checked={neuralInsights} onCheckedChange={setNeuralInsights} className="data-[state=checked]:bg-primary" />
                     </div>
@@ -543,79 +474,42 @@ export default function Dashboard() {
 
                 <div className="grid md:grid-cols-2 gap-8">
                   <div className="space-y-4">
-                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-                      <Globe className="h-3 w-3" /> Language Link
-                    </h4>
-                    <div className="flex items-center gap-4">
+                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary">Language Link</h4>
+                    <div className="flex gap-2">
                       {['Hindi', 'English'].map((lang) => (
-                        <button
+                        <Button
                           key={lang}
-                          className={cn(
-                            "flex-1 flex items-center justify-center gap-2 border border-white/10 h-10 rounded-xl font-bold uppercase tracking-widest text-[10px] transition-all",
-                            language === lang ? "bg-primary text-black" : "bg-white/5 text-muted-foreground hover:bg-white/10"
-                          )}
+                          variant={language === lang ? "default" : "outline"}
+                          className="flex-1 uppercase tracking-widest text-[10px] font-bold h-10"
                           onClick={() => setLanguage(lang)}
                         >
-                          <Globe className="h-3 w-3" />
                           {lang}
-                        </button>
+                        </Button>
                       ))}
                     </div>
                   </div>
                   <div className="space-y-4">
-                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-                      <Lock className="h-3 w-3" /> Access Protocol
-                    </h4>
-                    <div className="flex items-center gap-4">
-                      {['Standard', 'Omega'].map((lvl) => (
-                        <button
-                          key={lvl}
-                          className={cn(
-                            "flex-1 flex items-center justify-center gap-2 border border-white/10 h-10 rounded-xl font-bold uppercase tracking-widest text-[10px] transition-all",
-                            securityLevel === lvl ? "bg-primary text-black" : "bg-white/5 text-muted-foreground hover:bg-white/10"
-                          )}
-                          onClick={() => setSecurityLevel(lvl)}
+                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary">Vision Mode</h4>
+                    <div className="flex gap-2">
+                      {[
+                        { id: 'light', icon: Sun },
+                        { id: 'dark', icon: Moon },
+                        { id: 'system', icon: Monitor },
+                      ].map((m) => (
+                        <Button
+                          key={m.id}
+                          variant={theme === m.id ? "default" : "outline"}
+                          className="flex-1 h-10"
+                          onClick={() => setTheme(m.id as any)}
                         >
-                          <Lock className="h-3 w-3" />
-                          {lvl}
-                        </button>
+                          <m.icon className="h-4 w-4" />
+                        </Button>
                       ))}
                     </div>
                   </div>
                 </div>
-                
-                <Separator className="bg-white/5" />
-                
-                <div className="space-y-4">
-                  <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-                    <Monitor className="h-3 w-3" /> Vision Mode
-                  </h4>
-                  <div className="flex flex-wrap gap-4">
-                    {[
-                      { id: 'light', label: 'Light', icon: Sun },
-                      { id: 'dark', label: 'Dark', icon: Moon },
-                      { id: 'system', label: 'Auto', icon: Monitor },
-                    ].map((m) => (
-                      <button
-                        key={m.id}
-                        className={cn(
-                          "flex items-center gap-2 border border-white/10 h-12 px-6 rounded-xl font-bold uppercase tracking-widest text-[10px] transition-all",
-                          theme === m.id ? "bg-primary text-black" : "bg-white/5 text-muted-foreground hover:bg-white/10"
-                        )}
-                        onClick={() => setTheme(m.id as any)}
-                      >
-                        <m.icon className="h-4 w-4" />
-                        {m.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
 
                 <div className="flex justify-end gap-3 pt-4">
-                  <Button variant="outline" onClick={() => toast({ title: "Archive Export", description: "Compiling research logs for download..." })} className="border-white/10 hover:bg-white/5 uppercase tracking-widest font-bold text-[10px]">
-                    <Database className="h-3 w-3 mr-2" />
-                    Export A to Z Telemetry
-                  </Button>
                   <Button disabled={isSavingConfig} onClick={handleSaveSettings} className="bg-primary text-black hover:bg-primary/80 uppercase tracking-widest font-bold text-[10px] neon-glow">
                     {isSavingConfig ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3 mr-2" />}
                     Save A to Z Protocol
@@ -640,8 +534,8 @@ export default function Dashboard() {
                 <Target className="text-black h-6 w-6" />
               </div>
               <div>
-                <h1 className="text-lg font-bold tracking-tighter leading-none">RESEARCH.<span className="text-primary neon-text">AI</span></h1>
-                <p className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-bold italic">A to Z Intelligence</p>
+                <h1 className="text-lg font-bold tracking-tighter leading-none italic">RESEARCH.AI</h1>
+                <p className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-bold">A to Z Intelligence</p>
               </div>
             </div>
           </SidebarHeader>
@@ -662,50 +556,12 @@ export default function Dashboard() {
                             : "text-muted-foreground hover:text-foreground hover:bg-white/5"
                         )}
                       >
-                        <item.icon className={cn("h-5 w-5", activeTab === item.id && "neon-text text-primary")} />
+                        <item.icon className={cn("h-5 w-5", activeTab === item.id && "text-primary")} />
                         <span className="font-bold tracking-widest text-xs uppercase">{item.name}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ))}
                 </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-            
-            <SidebarGroup className="mt-6">
-              <SidebarGroupLabel className="text-[9px] uppercase tracking-[0.2em] font-bold text-primary/50 px-4 mb-2">A to Z Overrides</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <div className="px-4 space-y-4">
-                  <div className="flex flex-col gap-2">
-                    {['Science', 'Arts', 'Commerce'].map(tag => (
-                      <div 
-                        key={tag} 
-                        className={cn(
-                          "flex items-center justify-between p-2 rounded-lg cursor-pointer transition-all border",
-                          filters.academicTags?.includes(tag) 
-                            ? "bg-primary/10 border-primary/30 text-primary" 
-                            : "bg-white/5 border-transparent text-muted-foreground hover:bg-white/10"
-                        )}
-                        onClick={() => setFilters(prev => ({
-                          ...prev,
-                          academicTags: prev.academicTags?.includes(tag) 
-                            ? prev.academicTags.filter(t => t !== tag) 
-                            : [...(prev.academicTags || []), tag]
-                        }))}
-                      >
-                        <span className="text-[10px] font-bold uppercase tracking-widest">{tag}</span>
-                        {filters.academicTags?.includes(tag) && <CheckCircle2 className="h-3 w-3" />}
-                      </div>
-                    ))}
-                  </div>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="w-full text-[9px] uppercase tracking-widest font-bold text-muted-foreground hover:text-primary transition-colors h-8"
-                    onClick={() => setFilters({})}
-                  >
-                    Clear All Filters
-                  </Button>
-                </div>
               </SidebarGroupContent>
             </SidebarGroup>
           </SidebarContent>
@@ -714,10 +570,7 @@ export default function Dashboard() {
               <StudentAvatar name={currentUser?.displayName || "Research Admin"} className="h-10 w-10" />
               <div className="flex flex-col overflow-hidden">
                 <span className="text-xs font-bold truncate">{currentUser?.displayName || "Research Lead"}</span>
-                <div className="flex items-center gap-1">
-                  <div className="h-1.5 w-1.5 rounded-full bg-primary neon-glow animate-pulse" />
-                  <span className="text-[8px] text-primary/80 uppercase tracking-widest font-bold">Protocol: {securityLevel}</span>
-                </div>
+                <span className="text-[8px] text-primary/80 uppercase tracking-widest font-bold">Lvl: {securityLevel}</span>
               </div>
             </div>
           </SidebarFooter>
@@ -727,49 +580,41 @@ export default function Dashboard() {
           <header className="h-20 glass-card border-b border-white/10 px-8 flex items-center justify-between sticky top-0 z-10 shrink-0">
             <div className="flex items-center gap-6 flex-1">
               <SidebarTrigger className="md:hidden" />
-              <div className="flex items-center gap-3 w-full max-w-2xl group">
-                <VoiceSearch onResult={(res) => {
-                  setFilters(res)
-                  setActiveTab('students')
-                }} />
-              </div>
+              <VoiceSearch onResult={(res) => {
+                setFilters(res)
+                setActiveTab('students')
+              }} />
             </div>
             
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-4">
               <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5">
                 <ShieldCheck className="h-3 w-3 text-primary" />
-                <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-muted-foreground">Admin: {securityLevel}</span>
+                <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-muted-foreground">Integrity: 100%</span>
               </div>
-              <Button variant="ghost" size="icon" className="relative text-muted-foreground hover:text-primary transition-colors">
-                <Bell className="h-5 w-5" />
-                {stats.activeCount > 0 && <span className="absolute top-2 right-2 h-2 w-2 bg-primary rounded-full neon-glow" />}
-              </Button>
               <Button 
                 onClick={handleSeedData}
                 disabled={isDbLoading}
-                className="bg-primary/10 text-primary border-primary/30 border hover:bg-primary/20 transition-all font-bold tracking-widest uppercase text-[10px] h-10 px-6 rounded-xl"
+                className="bg-primary/10 text-primary border-primary/30 border hover:bg-primary/20 font-bold tracking-widest uppercase text-[10px] h-10 px-6 rounded-xl"
               >
                 <Upload className="h-4 w-4 mr-2" />
-                <span>Sync Cloud Nodes</span>
+                <span>Sync Cloud</span>
               </Button>
             </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto p-8 space-y-8 scroll-smooth">
+          <main className="flex-1 overflow-y-auto p-8 space-y-8">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
               <div className="space-y-1">
                 <h2 className="text-3xl font-black tracking-tighter uppercase text-white leading-none italic">
-                  {activeTab === 'dashboard' ? 'Operational Hub' : activeTab.toUpperCase() + ' UNIT'}
+                  {activeTab.toUpperCase()} UNIT
                 </h2>
                 <p className="text-muted-foreground/60 text-xs font-medium tracking-widest uppercase">
-                  {isDbLoading ? "Restoring encrypted stream..." : `Analyzing ${filteredStudents.length} active intelligence nodes`}
+                  {isDbLoading ? "Restoring encrypted stream..." : `Analyzing ${filteredStudents.length} active nodes`}
                 </p>
               </div>
-              <div className="flex gap-2">
-                <div className="bg-primary/10 text-primary border border-primary/20 px-4 py-2 rounded-xl flex items-center gap-2 group cursor-default transition-all hover:bg-primary/20">
-                  <Fingerprint className="h-4 w-4" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest">A to Z Integrity: 100%</span>
-                </div>
+              <div className="bg-primary/10 text-primary border border-primary/20 px-4 py-2 rounded-xl flex items-center gap-2">
+                <Fingerprint className="h-4 w-4" />
+                <span className="text-[10px] font-bold uppercase tracking-widest">A to Z Active</span>
               </div>
             </div>
 
