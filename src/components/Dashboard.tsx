@@ -25,7 +25,9 @@ import {
   Activity,
   ArrowRight,
   Fingerprint,
-  Cpu
+  Cpu,
+  Globe,
+  Lock
 } from "lucide-react"
 import { generateMockStudents, type Student } from "@/lib/mock-data"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
@@ -104,7 +106,7 @@ export default function Dashboard() {
   const [filters, setFilters] = useState<GenerativeVoiceSearchOutput>({})
   const [searchQuery, setSearchQuery] = useState("")
   
-  // Settings States
+  // Settings States (Default UI state before DB sync)
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('dark')
   const [autoSync, setAutoSync] = useState(true)
   const [neuralInsights, setNeuralInsights] = useState(true)
