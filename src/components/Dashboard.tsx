@@ -9,7 +9,6 @@ import {
   Settings, 
   Upload, 
   MoreVertical,
-  Bell,
   LayoutDashboard,
   Target,
   Zap,
@@ -17,29 +16,22 @@ import {
   Trophy,
   Loader2,
   Download,
-  CheckCircle2,
-  AlertCircle,
   ShieldCheck,
   Moon,
   Sun,
   Monitor,
   Save,
   Database,
-  Globe,
-  Lock,
   Activity,
   ArrowRight,
   Fingerprint,
-  Cpu,
-  Radio,
-  Network
+  Cpu
 } from "lucide-react"
 import { generateMockStudents, type Student } from "@/lib/mock-data"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
 import { StudentTable } from "./StudentTable"
 import { PerformanceTrend } from "./PerformanceChart"
