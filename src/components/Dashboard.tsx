@@ -68,7 +68,17 @@ const MISSION_INDIA_OBJECTIVES = [
   "Track skill development",
   "Multilingual India support",
   "Secure data (DPDP compliance)",
-  "Talent identification protocol"
+  "Talent identification protocol",
+  "Digitization of academic records",
+  "Parent-Teacher AI bridge",
+  "Regional language research nodes",
+  "Dropout prediction algorithms",
+  "Scholarship eligibility automation",
+  "Vocational skill tracking",
+  "Mental health support insights",
+  "Teacher resource optimization",
+  "Classroom engagement monitoring",
+  "National ranking synchronization"
 ];
 
 /**
@@ -307,12 +317,14 @@ export default function Dashboard() {
                   <CardTitle className="text-sm font-bold tracking-widest uppercase text-primary">A to Z National Objectives</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {MISSION_INDIA_OBJECTIVES.map((obj, i) => (
-                    <div key={i} className="flex items-center gap-3 group">
-                      <div className="h-1.5 w-1.5 rounded-full bg-primary neon-glow" />
-                      <span className="text-[11px] text-muted-foreground font-medium group-hover:text-foreground transition-colors">{obj}</span>
-                    </div>
-                  ))}
+                  <div className="h-[280px] overflow-y-auto pr-2 space-y-3 custom-scrollbar">
+                    {MISSION_INDIA_OBJECTIVES.map((obj, i) => (
+                      <div key={i} className="flex items-center gap-3 group">
+                        <div className="h-1.5 w-1.5 rounded-full bg-primary neon-glow shrink-0" />
+                        <span className="text-[11px] text-muted-foreground font-medium group-hover:text-foreground transition-colors">{obj}</span>
+                      </div>
+                    ))}
+                  </div>
                   <Separator className="bg-white/5 my-2" />
                   <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
                     <div className="flex items-center gap-2">
