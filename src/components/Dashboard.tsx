@@ -59,26 +59,26 @@ const navigation = [
 ]
 
 const MISSION_INDIA_OBJECTIVES = [
-  "Data-driven education for India",
-  "Real-time performance analytics",
-  "AI-driven insights for teachers",
-  "Bridge the rural-urban gap",
-  "Improve attendance patterns",
-  "Support NEP 2020 goals",
-  "Track skill development",
-  "Multilingual India support",
-  "Secure data (DPDP compliance)",
-  "Talent identification protocol",
-  "Digitization of academic records",
-  "Parent-Teacher AI bridge",
-  "Regional language research nodes",
-  "Dropout prediction algorithms",
-  "Scholarship eligibility automation",
-  "Vocational skill tracking",
-  "Mental health support insights",
-  "Teacher resource optimization",
-  "Classroom engagement monitoring",
-  "National ranking synchronization"
+  "1. Data-driven education for India",
+  "2. Real-time performance analytics",
+  "3. AI-driven insights for teachers",
+  "4. Bridge the rural-urban gap",
+  "5. Improve attendance patterns",
+  "6. Support NEP 2020 goals",
+  "7. Track skill development",
+  "8. Multilingual India support",
+  "9. Secure data (DPDP compliance)",
+  "10. Talent identification protocol",
+  "11. Digitization of academic records",
+  "12. Parent-Teacher AI bridge",
+  "13. Regional language research nodes",
+  "14. Dropout prediction algorithms",
+  "15. Scholarship eligibility automation",
+  "16. Vocational skill tracking",
+  "17. Mental health support insights",
+  "18. Teacher resource optimization",
+  "19. Classroom engagement monitoring",
+  "20. National ranking synchronization"
 ];
 
 /**
@@ -156,7 +156,7 @@ export default function Dashboard() {
 
   const { data: dbStudents, isLoading: isDbLoading } = useCollection<Student>(studentsQuery);
 
-  // Autonomous Sync: Restores nodes if directory is empty
+  // Autonomous Sync: Restores nodes if directory is empty and AutoSync is active
   useEffect(() => {
     if (mounted && !isDbLoading && dbStudents && dbStudents.length === 0 && autoSync && db && currentUser) {
       const mockData = generateMockStudents(20);
