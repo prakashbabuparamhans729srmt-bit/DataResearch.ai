@@ -29,7 +29,9 @@ import {
   Lock,
   Activity,
   ArrowRight,
-  Fingerprint
+  Fingerprint,
+  Cpu,
+  Radio
 } from "lucide-react"
 import { generateMockStudents, type Student } from "@/lib/mock-data"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
@@ -78,7 +80,17 @@ const MISSION_INDIA_OBJECTIVES = [
   "17. Mental health support insights",
   "18. Teacher resource optimization",
   "19. Classroom engagement monitoring",
-  "20. National ranking synchronization"
+  "20. National ranking synchronization",
+  "21. Adaptive learning paths",
+  "22. Peer-to-peer knowledge nodes",
+  "23. Holistic 360-degree assessment",
+  "24. Real-time intervention alerts",
+  "25. Resource distribution equity",
+  "26. Student wellness telemetry",
+  "27. Teacher training AI assistants",
+  "28. Localized curriculum mapping",
+  "29. Extra-curricular talent tracking",
+  "30. Alumni mentorship network link"
 ];
 
 /**
@@ -314,7 +326,9 @@ export default function Dashboard() {
               <PerformanceTrend students={filteredStudents} />
               <Card className="glass-card">
                 <CardHeader>
-                  <CardTitle className="text-sm font-bold tracking-widest uppercase text-primary">A to Z National Objectives</CardTitle>
+                  <CardTitle className="text-sm font-bold tracking-widest uppercase text-primary flex items-center gap-2">
+                    <Target className="h-4 w-4" /> A to Z National Objectives
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="h-[280px] overflow-y-auto pr-2 space-y-3 custom-scrollbar">
@@ -350,7 +364,9 @@ export default function Dashboard() {
               </div>
               <Card className="glass-card">
                 <CardHeader>
-                  <CardTitle className="text-sm font-bold tracking-widest uppercase text-primary">Top Research Nodes</CardTitle>
+                  <CardTitle className="text-sm font-bold tracking-widest uppercase text-primary flex items-center gap-2">
+                    <Trophy className="h-4 w-4" /> Top Research Nodes
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-5">
                   {topPerformers.length > 0 ? topPerformers.map((student) => (
@@ -393,7 +409,9 @@ export default function Dashboard() {
               <PerformanceTrend students={filteredStudents} />
               <Card className="glass-card">
                 <CardHeader>
-                  <CardTitle className="text-primary tracking-widest uppercase text-sm font-bold">A to Z Faculty Efficiency</CardTitle>
+                  <CardTitle className="text-primary tracking-widest uppercase text-sm font-bold flex items-center gap-2">
+                    <Cpu className="h-4 w-4" /> A to Z Faculty Efficiency
+                  </CardTitle>
                   <CardDescription className="text-muted-foreground/60 text-[10px] uppercase tracking-widest">Live cross-departmental analytics</CardDescription>
                 </CardHeader>
                 <CardContent className="pt-6 space-y-6">
@@ -429,11 +447,13 @@ export default function Dashboard() {
              <Card className="glass-card">
                <CardHeader className="flex flex-row items-center justify-between">
                  <div>
-                   <CardTitle className="text-primary tracking-widest uppercase text-sm font-bold">Research Archive Vault</CardTitle>
+                   <CardTitle className="text-primary tracking-widest uppercase text-sm font-bold flex items-center gap-2">
+                     <FileText className="h-4 w-4" /> Research Archive Vault
+                   </CardTitle>
                    <CardDescription className="text-muted-foreground/60 text-[10px] uppercase tracking-widest">Encrypted A to Z summaries and insights</CardDescription>
                  </div>
                  <div className="bg-primary/10 p-3 rounded-xl border border-primary/20">
-                   <FileText className="h-6 w-6 text-primary" />
+                   <Database className="h-6 w-6 text-primary" />
                  </div>
                </CardHeader>
                <CardContent className="grid md:grid-cols-2 gap-4">
