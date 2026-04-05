@@ -2,7 +2,7 @@
 "use client"
 
 import { useState } from "react"
-import { Sparkles, Loader2, ChevronRight, AlertTriangle, TrendingUp, Trophy, Activity, Brain } from "lucide-react"
+import { Sparkles, Loader2, AlertTriangle, Trophy, Activity, Brain } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { summarizeStudentDataInsights, type AIDataInsightsSummarizationOutput } from "@/ai/flows/ai-data-insights-summarization"
@@ -14,9 +14,20 @@ export function AIInsights({ students }: { students: Student[] }) {
   const [isLoading, setIsLoading] = useState(false)
 
   const generateInsights = async () => {
+    if (students.length === 0) return
     setIsLoading(true)
     try {
-      const result = await summarizeStudentDataInsights({ students })
+      const result = await summarizeStudentDataInsights({ students: students.map(s => ({
+        id: s.id,
+        name: s.name,
+        gender: s.gender as any,
+        tags: s.tags,
+        attendancePercentage: s.attendancePercentage,
+        completionPercentage: s.completionPercentage,
+        averageScorePercentage: s.averageScorePercentage,
+        rank: s.rank,
+        status: s.status as any
+      })) })
       setInsights(result)
     } catch (error) {
       console.error(error)
@@ -39,7 +50,11 @@ export function AIInsights({ students }: { students: Student[] }) {
                 Deep-dive into performance trends, elite research nodes, and identify mission-critical intervention protocols using our neural analysis engine.
               </p>
             </div>
-            <Button onClick={generateInsights} disabled={isLoading} className="gradient-border neon-glow h-12 px-8 uppercase font-bold tracking-widest text-[10px]">
+            <Button 
+              onClick={generateInsights} 
+              disabled={isLoading || students.length === 0} 
+              className="gradient-border neon-glow h-12 px-8 uppercase font-bold tracking-widest text-[10px]"
+            >
               {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
               Activate Neural Analysis
             </Button>
