@@ -1,7 +1,8 @@
+
 "use client"
 
 import { useState } from "react"
-import { Sparkles, Loader2, ChevronRight, AlertTriangle, TrendingUp, Trophy } from "lucide-react"
+import { Sparkles, Loader2, ChevronRight, AlertTriangle, TrendingUp, Trophy, Activity } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { summarizeStudentDataInsights, type AIDataInsightsSummarizationOutput } from "@/ai/flows/ai-data-insights-summarization"
@@ -33,14 +34,14 @@ export function AIInsights({ students }: { students: Student[] }) {
               <Sparkles className="h-6 w-6 text-primary animate-pulse" />
             </div>
             <div className="space-y-2">
-              <h3 className="text-lg font-semibold">Generate AI Analytics Summary</h3>
+              <h3 className="text-lg font-semibold">Generate A to Z Intelligence Summary</h3>
               <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-                Get deep insights into performance trends, top performers, and critical intervention areas.
+                Decrypt performance trends, identity top research nodes, and identify critical intervention protocols.
               </p>
             </div>
-            <Button onClick={generateInsights} disabled={isLoading} className="gradient-border">
+            <Button onClick={generateInsights} disabled={isLoading} className="gradient-border neon-glow h-12 px-8 uppercase font-bold tracking-widest text-[10px]">
               {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-              Analyze Data with AI
+              Initiate Neural Analysis
             </Button>
           </CardContent>
         </Card>
@@ -48,11 +49,11 @@ export function AIInsights({ students }: { students: Student[] }) {
         <div className="grid gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
           <Card className="glass-card">
             <CardHeader className="flex flex-row items-center space-x-2 pb-2">
-              <TrendingUp className="h-5 w-5 text-indigo-400" />
-              <CardTitle className="text-md">Overall Trends</CardTitle>
+              <Activity className="h-5 w-5 text-primary" />
+              <CardTitle className="text-sm font-bold tracking-widest uppercase">System Trends</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <p className="text-xs text-muted-foreground leading-relaxed font-medium">
                 {insights.summary.overallTrends}
               </p>
             </CardContent>
@@ -62,16 +63,16 @@ export function AIInsights({ students }: { students: Student[] }) {
             <Card className="glass-card border-emerald-500/20">
               <CardHeader className="flex flex-row items-center space-x-2 pb-2">
                 <Trophy className="h-5 w-5 text-emerald-400" />
-                <CardTitle className="text-md">Top Performers</CardTitle>
+                <CardTitle className="text-sm font-bold tracking-widest uppercase">Elite Nodes</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {insights.summary.topPerformers?.map((p, idx) => (
                   <div key={idx} className="flex items-center justify-between group">
                     <div>
-                      <p className="text-sm font-medium group-hover:text-primary transition-colors">{p.name}</p>
-                      <p className="text-xs text-muted-foreground">{p.performanceMetric}</p>
+                      <p className="text-xs font-bold group-hover:text-primary transition-colors">{p.name}</p>
+                      <p className="text-[10px] text-muted-foreground uppercase">{p.performanceMetric}</p>
                     </div>
-                    <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-500">
+                    <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
                       {p.value}%
                     </Badge>
                   </div>
@@ -82,26 +83,26 @@ export function AIInsights({ students }: { students: Student[] }) {
             <Card className="glass-card border-amber-500/20">
               <CardHeader className="flex flex-row items-center space-x-2 pb-2">
                 <AlertTriangle className="h-5 w-5 text-amber-400" />
-                <CardTitle className="text-md">Interventions Needed</CardTitle>
+                <CardTitle className="text-sm font-bold tracking-widest uppercase">Intervention Protocols</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {insights.summary.areasForIntervention?.map((area, idx) => (
                   <div key={idx} className="space-y-1">
                     <div className="flex items-center justify-between">
-                      <p className="text-xs font-bold uppercase tracking-wider text-amber-500">{area.category}</p>
-                      <Badge variant="outline" className="text-[10px] h-4">
-                        {area.studentCount} students
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-amber-500">{area.category}</p>
+                      <Badge variant="outline" className="text-[9px] h-4 border-amber-500/20">
+                        {area.studentCount} NODES
                       </Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground">{area.description}</p>
+                    <p className="text-[11px] text-muted-foreground font-medium">{area.description}</p>
                   </div>
                 ))}
               </CardContent>
             </Card>
           </div>
           
-          <Button variant="ghost" size="sm" onClick={() => setInsights(null)} className="text-muted-foreground hover:text-foreground">
-            Clear Insights
+          <Button variant="ghost" size="sm" onClick={() => setInsights(null)} className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground hover:text-foreground">
+            Reset Neural Insights
           </Button>
         </div>
       )}
