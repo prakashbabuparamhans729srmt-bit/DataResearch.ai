@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
@@ -26,7 +27,9 @@ import {
   Fingerprint,
   Cpu,
   Sparkles,
-  Search
+  Search,
+  RefreshCcw,
+  Globe
 } from "lucide-react"
 import { generateMockStudents, type Student } from "@/lib/mock-data"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
@@ -43,7 +46,7 @@ import { Chatbot } from "./Chatbot"
 import { type GenerativeVoiceSearchOutput } from "@/ai/flows/generative-voice-search"
 import { generateNationalReport, type NationalReportOutput } from "@/ai/flows/national-report-flow"
 import { useCollection, useFirebase, useMemoFirebase, setDocumentNonBlocking, useDoc, updateDocumentNonBlocking } from "@/firebase"
-import { collection, doc } from "firebase/firestore"
+import { collection, doc, serverTimestamp } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 
@@ -183,7 +186,10 @@ export default function Dashboard() {
       const studentsCol = collection(db, "students");
       mockData.forEach(student => {
         const studentRef = doc(studentsCol, student.id);
-        setDocumentNonBlocking(studentRef, student, { merge: true });
+        setDocumentNonBlocking(studentRef, {
+          ...student,
+          updatedAt: serverTimestamp()
+        }, { merge: true });
       });
       toast({
         title: "A to Z Auto-Sync Complete",
@@ -203,7 +209,10 @@ export default function Dashboard() {
     const studentsCol = collection(db, "students");
     mockData.forEach(student => {
       const studentRef = doc(studentsCol, student.id);
-      setDocumentNonBlocking(studentRef, student, { merge: true });
+      setDocumentNonBlocking(studentRef, {
+        ...student,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
     });
   };
 
@@ -656,16 +665,16 @@ export default function Dashboard() {
                 <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-muted-foreground">Flow: Active</span>
               </div>
               <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5">
-                <ShieldCheck className="h-3 w-3 text-primary" />
-                <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-muted-foreground">Integrity: 100%</span>
+                <Globe className="h-3 w-3 text-primary" />
+                <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-muted-foreground">Region: IN</span>
               </div>
               <Button 
                 onClick={handleSeedData}
                 disabled={isDbLoading}
                 className="bg-primary/10 text-primary border-primary/30 border hover:bg-primary/20 font-bold tracking-widest uppercase text-[10px] h-10 px-6 rounded-xl"
               >
-                <Upload className="h-4 w-4 mr-2" />
-                <span>Sync Cloud</span>
+                <RefreshCcw className="h-4 w-4 mr-2" />
+                <span>Sync Node</span>
               </Button>
             </div>
           </header>
