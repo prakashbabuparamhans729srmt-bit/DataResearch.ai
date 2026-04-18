@@ -37,7 +37,7 @@ export default function Home() {
           <div className="flex items-center justify-center gap-2">
             <Zap className="h-3 w-3 text-[#07F1D6] fill-[#07F1D6]" />
             <p className="text-[10px] text-muted-foreground/60 uppercase tracking-[0.5em] font-bold">
-              Establishing Secure Link
+              A to Z Secure Link Initializing
             </p>
           </div>
         </div>

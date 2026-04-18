@@ -2,7 +2,7 @@
 "use client"
 
 import { useState } from "react"
-import { ShieldCheck, Mail, Lock, UserPlus, LogIn, ArrowRight, Github } from "lucide-react"
+import { ShieldCheck, Mail, Lock, UserPlus, LogIn, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -68,7 +68,7 @@ export function AuthPage() {
               RESEARCH.<span className="text-[#07F1D6] neon-text">AI</span>
             </CardTitle>
             <CardDescription className="text-muted-foreground/60 text-[10px] uppercase tracking-[0.3em] font-bold">
-              Secure Intelligence Access
+              Secure Intelligence Access | A to Z
             </CardDescription>
           </div>
         </CardHeader>
@@ -88,31 +88,25 @@ export function AuthPage() {
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
                   <Label className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">Contact Node (Email)</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input 
-                      type="email" 
-                      placeholder="admin@research.ai" 
-                      className="bg-white/5 border-white/10 pl-10 focus-visible:ring-[#07F1D6]" 
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                    />
-                  </div>
+                  <Input 
+                    type="email" 
+                    placeholder="admin@research.ai" 
+                    className="bg-white/5 border-white/10 focus-visible:ring-[#07F1D6]" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">Access Key (Password)</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input 
-                      type="password" 
-                      placeholder="••••••••" 
-                      className="bg-white/5 border-white/10 pl-10 focus-visible:ring-[#07F1D6]" 
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
-                  </div>
+                  <Input 
+                    type="password" 
+                    placeholder="••••••••" 
+                    className="bg-white/5 border-white/10 focus-visible:ring-[#07F1D6]" 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
                 </div>
                 <Button type="submit" disabled={isLoading} className="w-full bg-[#07F1D6] text-black hover:bg-[#07F1D6]/80 font-bold uppercase tracking-widest py-6">
                   {isLoading ? "Authenticating..." : "Initiate Login"}
@@ -125,31 +119,25 @@ export function AuthPage() {
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
                   <Label className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">New Node Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input 
-                      type="email" 
-                      placeholder="yourname@research.ai" 
-                      className="bg-white/5 border-white/10 pl-10 focus-visible:ring-[#07F1D6]" 
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                    />
-                  </div>
+                  <Input 
+                    type="email" 
+                    placeholder="yourname@research.ai" 
+                    className="bg-white/5 border-white/10 focus-visible:ring-[#07F1D6]" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">Security Protocol Key</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input 
-                      type="password" 
-                      placeholder="Create Password" 
-                      className="bg-white/5 border-white/10 pl-10 focus-visible:ring-[#07F1D6]" 
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
-                  </div>
+                  <Input 
+                    type="password" 
+                    placeholder="Create Password" 
+                    className="bg-white/5 border-white/10 focus-visible:ring-[#07F1D6]" 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
                 </div>
                 <Button type="submit" disabled={isLoading} className="w-full bg-white text-black hover:bg-white/80 font-bold uppercase tracking-widest py-6">
                   {isLoading ? "Provisioning..." : "Register Account"}
@@ -178,7 +166,7 @@ export function AuthPage() {
 
         <CardFooter className="flex flex-col space-y-4 pb-8">
           <p className="text-[9px] text-center text-muted-foreground/40 uppercase tracking-[0.2em] px-8">
-            This system is protected by encryption layer omega. All unauthorized access attempts are logged.
+            A to Z System is protected by encryption layer omega. All unauthorized access attempts are logged.
           </p>
         </CardFooter>
       </Card>
