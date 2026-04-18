@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
@@ -26,9 +25,8 @@ import {
   ArrowRight,
   Fingerprint,
   Cpu,
-  Globe,
-  Lock,
-  Pulse
+  Sparkles,
+  AlertCircle
 } from "lucide-react"
 import { generateMockStudents, type Student } from "@/lib/mock-data"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
@@ -43,6 +41,7 @@ import { AIInsights } from "./AIInsights"
 import { StudentAvatar } from "./StudentAvatar"
 import { Chatbot } from "./Chatbot"
 import { type GenerativeVoiceSearchOutput } from "@/ai/flows/generative-voice-search"
+import { generateNationalReport, type NationalReportOutput } from "@/ai/flows/national-report-flow"
 import { useCollection, useFirebase, useMemoFirebase, setDocumentNonBlocking, useDoc, updateDocumentNonBlocking } from "@/firebase"
 import { collection, doc } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
@@ -113,6 +112,10 @@ export default function Dashboard() {
   const [language, setLanguage] = useState('English')
   const [securityLevel, setSecurityLevel] = useState('Omega')
   const [isSavingConfig, setIsSavingConfig] = useState(false)
+
+  // Report Generation State
+  const [activeReport, setActiveReport] = useState<NationalReportOutput | null>(null)
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false)
 
   const { toast } = useToast()
 
@@ -220,6 +223,23 @@ export default function Dashboard() {
         description: "System protocols have been encrypted and uploaded to the cloud.",
       });
     }, 800);
+  };
+
+  const handleGenerateReport = async () => {
+    if (!students.length) return;
+    setIsGeneratingReport(true);
+    try {
+      const result = await generateNationalReport({
+        students: students.slice(0, 50),
+        objectives: MISSION_INDIA_OBJECTIVES.slice(0, 10)
+      });
+      setActiveReport(result);
+      toast({ title: "Report Archived", description: "New research node summary generated." });
+    } catch (error) {
+      toast({ variant: "destructive", title: "Audit Failed", description: "Could not sync with AI report nodes." });
+    } finally {
+      setIsGeneratingReport(false);
+    }
   };
 
   const students = useMemo(() => dbStudents || [], [dbStudents]);
@@ -409,26 +429,72 @@ export default function Dashboard() {
                    </CardTitle>
                    <CardDescription className="text-muted-foreground/60 text-[10px] uppercase tracking-widest">Encrypted summaries and insights</CardDescription>
                  </div>
-                 <Database className="h-6 w-6 text-primary" />
+                 <div className="flex gap-2">
+                   <Button 
+                    onClick={handleGenerateReport} 
+                    disabled={isGeneratingReport || !students.length}
+                    className="bg-primary text-black font-bold uppercase tracking-widest text-[10px] h-9 px-4 neon-glow"
+                   >
+                     {isGeneratingReport ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : <Sparkles className="h-3 w-3 mr-2" />}
+                     Neural Audit
+                   </Button>
+                   <Database className="h-6 w-6 text-primary" />
+                 </div>
                </CardHeader>
-               <CardContent className="grid md:grid-cols-2 gap-4">
-                 {[
-                   { name: 'National Performance Audit', date: 'Oct 2023', size: '2.4 MB', type: 'Official' },
-                   { name: 'Rural Education Efficiency', date: 'Sep 2023', size: '1.8 MB', type: 'Research' },
-                   { name: 'Skill Growth Projection', date: 'Aug 2023', size: '3.1 MB', type: 'Internal' },
-                   { name: 'A to Z System Log', date: 'July 2023', size: '5.2 MB', type: 'Audit' },
-                 ].map((report, i) => (
-                   <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-all border border-white/5 group">
-                     <div className="flex items-center gap-4">
-                        <Download className="h-4 w-4 text-primary" />
-                        <div>
-                          <p className="text-sm font-bold group-hover:text-primary transition-colors">{report.name}</p>
-                          <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{report.date} • {report.size}</p>
-                        </div>
+               <CardContent className="space-y-6">
+                 {activeReport && (
+                   <div className="bg-primary/5 border border-primary/20 rounded-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-500">
+                     <div className="flex items-center justify-between">
+                        <h4 className="text-primary font-bold uppercase tracking-widest text-xs">{activeReport.reportTitle}</h4>
+                        <Badge variant="outline" className="border-primary text-primary text-[9px]">LIVE AUDIT</Badge>
                      </div>
-                     <Badge variant="outline" className="text-[9px] border-primary/20 text-primary uppercase">{report.type}</Badge>
+                     <p className="text-[11px] text-muted-foreground leading-relaxed italic border-l-2 border-primary/30 pl-4">{activeReport.executiveSummary}</p>
+                     <div className="grid sm:grid-cols-2 gap-4">
+                        {activeReport.objectiveAudit.map((item, i) => (
+                          <div key={i} className="p-3 bg-black/40 rounded-xl border border-white/5 space-y-2">
+                            <div className="flex justify-between items-start">
+                              <span className="text-[10px] font-bold text-white max-w-[80%]">{item.objective}</span>
+                              <span className={cn(
+                                "text-[8px] px-1.5 py-0.5 rounded font-bold uppercase tracking-tighter",
+                                item.status === 'Achieved' ? "bg-emerald-500/20 text-emerald-400" : 
+                                item.status === 'Progressing' ? "bg-amber-500/20 text-amber-400" : "bg-destructive/20 text-destructive"
+                              )}>{item.status}</span>
+                            </div>
+                            <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                              <div className="h-full bg-primary" style={{ width: `${item.impactScore}%` }} />
+                            </div>
+                            <p className="text-[9px] text-muted-foreground leading-tight">{item.details}</p>
+                          </div>
+                        ))}
+                     </div>
+                     <div className="bg-primary/10 p-3 rounded-xl border border-primary/20">
+                        <p className="text-[10px] font-bold text-primary uppercase mb-1 flex items-center gap-2">
+                          <Activity className="h-3 w-3" /> Strategic Recommendation
+                        </p>
+                        <p className="text-[10px] text-muted-foreground font-medium">{activeReport.strategicRecommendation}</p>
+                     </div>
                    </div>
-                 ))}
+                 )}
+
+                 <div className="grid md:grid-cols-2 gap-4">
+                   {[
+                     { name: 'National Performance Audit', date: 'Oct 2023', size: '2.4 MB', type: 'Official' },
+                     { name: 'Rural Education Efficiency', date: 'Sep 2023', size: '1.8 MB', type: 'Research' },
+                     { name: 'Skill Growth Projection', date: 'Aug 2023', size: '3.1 MB', type: 'Internal' },
+                     { name: 'A to Z System Log', date: 'July 2023', size: '5.2 MB', type: 'Audit' },
+                   ].map((report, i) => (
+                     <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-all border border-white/5 group">
+                       <div className="flex items-center gap-4">
+                          <Download className="h-4 w-4 text-primary" />
+                          <div>
+                            <p className="text-sm font-bold group-hover:text-primary transition-colors">{report.name}</p>
+                            <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{report.date} • {report.size}</p>
+                          </div>
+                       </div>
+                       <Badge variant="outline" className="text-[9px] border-primary/20 text-primary uppercase">{report.type}</Badge>
+                     </div>
+                   ))}
+                 </div>
                </CardContent>
              </Card>
           </div>
