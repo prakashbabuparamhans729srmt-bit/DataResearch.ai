@@ -196,7 +196,7 @@ export default function Dashboard() {
         description: "Restored 20 intelligence nodes from secure cloud backup.",
       });
     }
-  }, [mounted, isDbLoading, dbStudents, autoSync, db, currentUser]);
+  }, [mounted, isDbLoading, dbStudents, autoSync, db, currentUser, toast]);
 
   const handleSeedData = () => {
     if (!db || !currentUser) {
