@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
@@ -123,6 +124,7 @@ export default function Dashboard() {
     setMounted(true)
   }, [])
 
+  // Initialize Admin Profile on First Load
   useEffect(() => {
     if (currentUser && db) {
       const adminRef = doc(db, "admin_users", currentUser.uid);
@@ -136,6 +138,7 @@ export default function Dashboard() {
     }
   }, [currentUser, db]);
 
+  // Handle Theme Changes
   useEffect(() => {
     if (!mounted) return;
     const root = window.document.documentElement;
@@ -148,6 +151,7 @@ export default function Dashboard() {
     }
   }, [theme, mounted]);
 
+  // Load User Preferences from Firestore
   const adminDocRef = useMemoFirebase(() => {
     if (!db || !currentUser) return null;
     return doc(db, "admin_users", currentUser.uid);
@@ -165,6 +169,7 @@ export default function Dashboard() {
     }
   }, [adminProfile]);
 
+  // Load Students from Firestore
   const studentsQuery = useMemoFirebase(() => {
     if (!db) return null;
     return collection(db, "students");
@@ -172,6 +177,7 @@ export default function Dashboard() {
 
   const { data: dbStudents, isLoading: isDbLoading } = useCollection<Student>(studentsQuery);
 
+  // Auto-Sync Logic: If DB is empty and autoSync is on, seed data
   useEffect(() => {
     if (mounted && !isDbLoading && dbStudents && dbStudents.length === 0 && autoSync && db && currentUser) {
       const mockData = generateMockStudents(20);
@@ -298,6 +304,7 @@ export default function Dashboard() {
       case 'dashboard':
         return (
           <div className="space-y-6 animate-in fade-in duration-700">
+            {/* Operational Metrics */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {[
                 { label: 'System Presence', value: `${stats.attendance}%`, icon: Zap },
