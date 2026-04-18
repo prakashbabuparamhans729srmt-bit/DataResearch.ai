@@ -107,7 +107,7 @@ export default function Dashboard() {
   const [filters, setFilters] = useState<GenerativeVoiceSearchOutput>({})
   const [searchQuery, setSearchQuery] = useState("")
   
-  // A to Z System States
+  // A to Z System States (Linked to Firestore)
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('dark')
   const [autoSync, setAutoSync] = useState(true)
   const [neuralInsights, setNeuralInsights] = useState(true)
@@ -121,7 +121,7 @@ export default function Dashboard() {
     setMounted(true)
   }, [])
 
-  // Persistent A to Z Admin Sync
+  // Persistent A to Z Admin Sync Initialization
   useEffect(() => {
     if (currentUser && db) {
       const adminRef = doc(db, "admin_users", currentUser.uid);
@@ -155,7 +155,7 @@ export default function Dashboard() {
 
   const { data: adminProfile, isLoading: isAdminLoading } = useDoc(adminDocRef);
 
-  // Restore A to Z Protocol Settings
+  // Restore A to Z Protocol Settings from Cloud
   useEffect(() => {
     if (adminProfile) {
       if (adminProfile.theme) setTheme(adminProfile.theme as any);
