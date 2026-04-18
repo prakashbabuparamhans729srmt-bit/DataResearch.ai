@@ -77,6 +77,12 @@
   background: linear-gradient(135deg, hsl(var(--primary)), transparent);
 }
 
+.neural-grid {
+  background-size: 30px 30px;
+  background-image: linear-gradient(to right, hsl(var(--primary) / 0.05) 1px, transparent 1px),
+                    linear-gradient(to bottom, hsl(var(--primary) / 0.05) 1px, transparent 1px);
+}
+
 ::-webkit-scrollbar {
   width: 6px;
 }

@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
@@ -27,7 +26,7 @@ import {
   Fingerprint,
   Cpu,
   Sparkles,
-  AlertCircle
+  Search
 } from "lucide-react"
 import { generateMockStudents, type Student } from "@/lib/mock-data"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
@@ -591,7 +590,7 @@ export default function Dashboard() {
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="flex h-screen w-full bg-background overflow-hidden relative">
+      <div className="flex h-screen w-full bg-background overflow-hidden relative neural-grid">
         <Sidebar className="glass-card border-r border-white/5 shadow-none">
           <SidebarHeader className="p-6">
             <div className="flex items-center gap-3 mb-2">
