@@ -107,6 +107,7 @@ export default function Dashboard() {
   const [filters, setFilters] = useState<GenerativeVoiceSearchOutput>({})
   const [searchQuery, setSearchQuery] = useState("")
   
+  // A to Z System States
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('dark')
   const [autoSync, setAutoSync] = useState(true)
   const [neuralInsights, setNeuralInsights] = useState(true)
@@ -120,6 +121,7 @@ export default function Dashboard() {
     setMounted(true)
   }, [])
 
+  // Persistent A to Z Admin Sync
   useEffect(() => {
     if (currentUser && db) {
       const adminRef = doc(db, "admin_users", currentUser.uid);
@@ -133,6 +135,7 @@ export default function Dashboard() {
     }
   }, [currentUser, db]);
 
+  // Dynamic Theme Application
   useEffect(() => {
     if (!mounted) return;
     const root = window.document.documentElement;
@@ -152,6 +155,7 @@ export default function Dashboard() {
 
   const { data: adminProfile, isLoading: isAdminLoading } = useDoc(adminDocRef);
 
+  // Restore A to Z Protocol Settings
   useEffect(() => {
     if (adminProfile) {
       if (adminProfile.theme) setTheme(adminProfile.theme as any);
@@ -169,6 +173,7 @@ export default function Dashboard() {
 
   const { data: dbStudents, isLoading: isDbLoading } = useCollection<Student>(studentsQuery);
 
+  // Autonomous Node Restoration (Flow Activation)
   useEffect(() => {
     if (mounted && !isDbLoading && dbStudents && dbStudents.length === 0 && autoSync && db && currentUser) {
       const mockData = generateMockStudents(20);
