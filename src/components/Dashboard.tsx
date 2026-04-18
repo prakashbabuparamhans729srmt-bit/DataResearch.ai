@@ -29,7 +29,8 @@ import {
   Sparkles,
   Search,
   RefreshCcw,
-  Globe
+  Globe,
+  AlertCircle
 } from "lucide-react"
 import { generateMockStudents, type Student } from "@/lib/mock-data"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
@@ -394,7 +395,11 @@ export default function Dashboard() {
           </div>
         )
       case 'students':
-        return <StudentTable students={filteredStudents} />
+        return (
+          <div className="space-y-6 animate-in fade-in duration-500">
+            <StudentTable students={filteredStudents} />
+          </div>
+        )
       case 'analysis':
         return (
           <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-700">
@@ -442,7 +447,7 @@ export default function Dashboard() {
                    <CardTitle className="text-primary tracking-widest uppercase text-sm font-bold flex items-center gap-2">
                      <FileText className="h-4 w-4" /> Archive Vault
                    </CardTitle>
-                   <CardDescription className="text-muted-foreground/60 text-[10px] uppercase tracking-widest">Encrypted summaries and insights</CardDescription>
+                   <CardDescription className="text-muted-foreground/60 text-[10px] uppercase tracking-widest">Encrypted summaries and research reports</CardDescription>
                  </div>
                  <div className="flex gap-2">
                    <Button 
@@ -457,11 +462,20 @@ export default function Dashboard() {
                  </div>
                </CardHeader>
                <CardContent className="space-y-6">
+                 {!activeReport && !isGeneratingReport && (
+                   <div className="py-20 flex flex-col items-center justify-center text-center space-y-4 border border-dashed border-white/10 rounded-2xl">
+                     <div className="h-12 w-12 rounded-full bg-white/5 flex items-center justify-center">
+                       <AlertCircle className="h-6 w-6 text-muted-foreground" />
+                     </div>
+                     <p className="text-xs text-muted-foreground uppercase tracking-widest font-bold">No active reports generated. Initiate neural audit to begin.</p>
+                   </div>
+                 )}
+
                  {activeReport && (
                    <div className="bg-primary/5 border border-primary/20 rounded-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-500">
                      <div className="flex items-center justify-between">
                         <h4 className="text-primary font-bold uppercase tracking-widest text-xs">{activeReport.reportTitle}</h4>
-                        <Badge variant="outline" className="border-primary text-primary text-[9px]">LIVE AUDIT</Badge>
+                        <Badge variant="outline" className="border-primary text-primary text-[9px]">MISSION REPORT</Badge>
                      </div>
                      <p className="text-[11px] text-muted-foreground leading-relaxed italic border-l-2 border-primary/30 pl-4">{activeReport.executiveSummary}</p>
                      <div className="grid sm:grid-cols-2 gap-4">
@@ -531,15 +545,25 @@ export default function Dashboard() {
                       <p className="text-xs text-muted-foreground">Admin Mail</p>
                       <p className="text-sm font-mono bg-white/5 p-2 rounded border border-white/5 truncate">{currentUser?.email}</p>
                     </div>
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground">Display Name</p>
+                      <p className="text-sm font-bold truncate">{currentUser?.displayName || "Research Admin"}</p>
+                    </div>
                   </div>
                   <div className="space-y-4">
                     <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary">System Overrides</h4>
                     <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
-                      <span className="text-xs font-medium">Auto-Sync Nodes</span>
+                      <div className="space-y-0.5">
+                        <span className="text-xs font-bold">Auto-Sync Nodes</span>
+                        <p className="text-[9px] text-muted-foreground">Seed data if directory is empty</p>
+                      </div>
                       <Switch checked={autoSync} onCheckedChange={setAutoSync} className="data-[state=checked]:bg-primary" />
                     </div>
                     <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
-                      <span className="text-xs font-medium">Neural Insights</span>
+                      <div className="space-y-0.5">
+                        <span className="text-xs font-bold">Neural Insights</span>
+                        <p className="text-[9px] text-muted-foreground">Enable AI trend generation</p>
+                      </div>
                       <Switch checked={neuralInsights} onCheckedChange={setNeuralInsights} className="data-[state=checked]:bg-primary" />
                     </div>
                   </div>
@@ -583,8 +607,8 @@ export default function Dashboard() {
                 </div>
 
                 <div className="flex justify-end gap-3 pt-4">
-                  <Button disabled={isSavingConfig} onClick={handleSaveSettings} className="bg-primary text-black hover:bg-primary/80 uppercase tracking-widest font-bold text-[10px] neon-glow">
-                    {isSavingConfig ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3 mr-2" />}
+                  <Button disabled={isSavingConfig} onClick={handleSaveSettings} className="bg-primary text-black hover:bg-primary/80 uppercase tracking-widest font-bold text-[10px] neon-glow h-12 px-8">
+                    {isSavingConfig ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
                     Save A to Z Protocol
                   </Button>
                 </div>
