@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
@@ -31,7 +30,10 @@ import {
   RefreshCcw,
   Globe,
   AlertCircle,
-  Network
+  Network,
+  Radio,
+  Scan,
+  ShieldAlert
 } from "lucide-react"
 import { generateMockStudents, type Student } from "@/lib/mock-data"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
@@ -39,6 +41,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
+import { Progress } from "@/components/ui/progress"
 import { StudentTable } from "./StudentTable"
 import { PerformanceTrend } from "./PerformanceChart"
 import { VoiceSearch } from "./VoiceSearch"
@@ -660,6 +663,26 @@ export default function Dashboard() {
                     </SidebarMenuItem>
                   ))}
                 </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            <SidebarGroup className="mt-4">
+              <SidebarGroupLabel className="text-[9px] uppercase tracking-[0.2em] font-bold text-primary/50 px-4 mb-2">System Telemetry</SidebarGroupLabel>
+              <SidebarGroupContent className="px-4 space-y-4">
+                 <div className="space-y-1">
+                   <div className="flex justify-between text-[8px] font-bold uppercase tracking-widest mb-1">
+                     <span>Neural Load</span>
+                     <span className="text-primary">42%</span>
+                   </div>
+                   <Progress value={42} className="h-1 bg-white/5" />
+                 </div>
+                 <div className="space-y-1">
+                   <div className="flex justify-between text-[8px] font-bold uppercase tracking-widest mb-1">
+                     <span>Objective Sync</span>
+                     <span className="text-primary">10/40</span>
+                   </div>
+                   <Progress value={25} className="h-1 bg-white/5" />
+                 </div>
               </SidebarGroupContent>
             </SidebarGroup>
           </SidebarContent>
