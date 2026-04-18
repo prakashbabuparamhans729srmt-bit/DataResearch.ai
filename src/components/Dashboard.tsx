@@ -27,7 +27,8 @@ import {
   Fingerprint,
   Cpu,
   Globe,
-  Lock
+  Lock,
+  Pulse
 } from "lucide-react"
 import { generateMockStudents, type Student } from "@/lib/mock-data"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
@@ -583,6 +584,10 @@ export default function Dashboard() {
             </div>
             
             <div className="flex items-center gap-4">
+              <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5">
+                <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-muted-foreground">Flow: Active</span>
+              </div>
               <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5">
                 <ShieldCheck className="h-3 w-3 text-primary" />
                 <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-muted-foreground">Integrity: 100%</span>
