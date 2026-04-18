@@ -17,20 +17,22 @@ export function AIInsights({ students }: { students: Student[] }) {
     if (students.length === 0) return
     setIsLoading(true)
     try {
-      const result = await summarizeStudentDataInsights({ students: students.map(s => ({
-        id: s.id,
-        name: s.name,
-        gender: s.gender as any,
-        tags: s.tags,
-        attendancePercentage: s.attendancePercentage,
-        completionPercentage: s.completionPercentage,
-        averageScorePercentage: s.averageScorePercentage,
-        rank: s.rank,
-        status: s.status as any
-      })) })
+      const result = await summarizeStudentDataInsights({ 
+        students: students.map(s => ({
+          id: s.id,
+          name: s.name,
+          gender: s.gender as any,
+          tags: s.tags,
+          attendancePercentage: s.attendancePercentage,
+          completionPercentage: s.completionPercentage,
+          averageScorePercentage: s.averageScorePercentage,
+          rank: s.rank,
+          status: s.status as any
+        })) 
+      })
       setInsights(result)
     } catch (error) {
-      console.error(error)
+      console.error("Neural analysis failed:", error)
     } finally {
       setIsLoading(false)
     }

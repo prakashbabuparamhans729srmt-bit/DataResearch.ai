@@ -106,7 +106,7 @@ export default function Dashboard() {
   const [filters, setFilters] = useState<GenerativeVoiceSearchOutput>({})
   const [searchQuery, setSearchQuery] = useState("")
   
-  // Settings States (Default UI state before DB sync)
+  // Settings States
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('dark')
   const [autoSync, setAutoSync] = useState(true)
   const [neuralInsights, setNeuralInsights] = useState(true)
@@ -116,7 +116,11 @@ export default function Dashboard() {
 
   const { toast } = useToast()
 
-  // Auto-register admin node on first link
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Auto-register admin node
   useEffect(() => {
     if (currentUser && db) {
       const adminRef = doc(db, "admin_users", currentUser.uid);
@@ -132,6 +136,7 @@ export default function Dashboard() {
 
   // Theme Sync Protocol
   useEffect(() => {
+    if (!mounted) return;
     const root = window.document.documentElement;
     root.classList.remove("light", "dark");
     if (theme === "system") {
@@ -140,7 +145,7 @@ export default function Dashboard() {
     } else {
       root.classList.add(theme);
     }
-  }, [theme]);
+  }, [theme, mounted]);
 
   const adminDocRef = useMemoFirebase(() => {
     if (!db || !currentUser) return null;
@@ -167,7 +172,7 @@ export default function Dashboard() {
 
   const { data: dbStudents, isLoading: isDbLoading } = useCollection<Student>(studentsQuery);
 
-  // Auto-restore nodes if system is empty and autoSync is active
+  // Auto-restore nodes if system is empty
   useEffect(() => {
     if (mounted && !isDbLoading && dbStudents && dbStudents.length === 0 && autoSync && db && currentUser) {
       const mockData = generateMockStudents(20);
@@ -182,10 +187,6 @@ export default function Dashboard() {
       });
     }
   }, [mounted, isDbLoading, dbStudents, autoSync, db, currentUser]);
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   const handleSeedData = () => {
     if (!db || !currentUser) {
