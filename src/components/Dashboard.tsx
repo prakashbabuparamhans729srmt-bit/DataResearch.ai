@@ -30,7 +30,8 @@ import {
   Search,
   RefreshCcw,
   Globe,
-  AlertCircle
+  AlertCircle,
+  Network
 } from "lucide-react"
 import { generateMockStudents, type Student } from "@/lib/mock-data"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
@@ -689,8 +690,8 @@ export default function Dashboard() {
                 <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-muted-foreground">Flow: Active</span>
               </div>
               <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5">
-                <Globe className="h-3 w-3 text-primary" />
-                <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-muted-foreground">Region: IN</span>
+                <Network className="h-3 w-3 text-primary" />
+                <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-muted-foreground">A to Z Sync: OK</span>
               </div>
               <Button 
                 onClick={handleSeedData}
