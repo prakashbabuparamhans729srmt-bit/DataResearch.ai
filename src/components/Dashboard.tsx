@@ -27,7 +27,8 @@ import {
   Cpu,
   Sparkles,
   RefreshCcw,
-  Network
+  Network,
+  Radio
 } from "lucide-react"
 import { generateMockStudents, type Student } from "@/lib/mock-data"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
@@ -704,12 +705,12 @@ export default function Dashboard() {
             
             <div className="flex items-center gap-4">
               <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5">
-                <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-                <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-muted-foreground">Flow: Active</span>
+                <Radio className="h-3 w-3 text-primary animate-pulse" />
+                <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-muted-foreground">A to Z Active</span>
               </div>
               <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5">
                 <Network className="h-3 w-3 text-primary" />
-                <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-muted-foreground">A to Z Sync: OK</span>
+                <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-muted-foreground">Cloud Sync: OK</span>
               </div>
               <Button 
                 onClick={handleSeedData}
@@ -725,16 +726,19 @@ export default function Dashboard() {
           <main className="flex-1 overflow-y-auto p-8 space-y-8">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
               <div className="space-y-1">
-                <h2 className="text-3xl font-black tracking-tighter uppercase text-white leading-none italic">
-                  {activeTab.toUpperCase()} UNIT
-                </h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-3xl font-black tracking-tighter uppercase text-white leading-none italic">
+                    {activeTab.toUpperCase()} UNIT
+                  </h2>
+                  <Badge variant="outline" className="h-5 text-[8px] font-bold border-primary text-primary tracking-widest">LIVE FLOW</Badge>
+                </div>
                 <p className="text-muted-foreground/60 text-xs font-medium tracking-widest uppercase">
                   {isDbLoading ? "Restoring encrypted stream..." : `Analyzing ${filteredStudents.length} active nodes`}
                 </p>
               </div>
               <div className="bg-primary/10 text-primary border border-primary/20 px-4 py-2 rounded-xl flex items-center gap-2">
                 <Fingerprint className="h-4 w-4" />
-                <span className="text-[10px] font-bold uppercase tracking-widest">A to Z Active</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest">Protocol Identified</span>
               </div>
             </div>
 
