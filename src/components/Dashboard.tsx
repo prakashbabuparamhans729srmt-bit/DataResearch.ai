@@ -28,7 +28,9 @@ import {
   Sparkles,
   RefreshCcw,
   Network,
-  Radio
+  Radio,
+  CheckCircle2,
+  AlertCircle
 } from "lucide-react"
 import { generateMockStudents, type Student } from "@/lib/mock-data"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
@@ -49,6 +51,13 @@ import { useCollection, useFirebase, useMemoFirebase, setDocumentNonBlocking, us
 import { collection, doc, serverTimestamp } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 const navigation = [
   { id: 'dashboard', name: 'Operational Hub', icon: LayoutDashboard },
@@ -116,6 +125,7 @@ export default function Dashboard() {
   const [language, setLanguage] = useState('English')
   const [securityLevel, setSecurityLevel] = useState('Omega')
   const [isSavingConfig, setIsSavingConfig] = useState(false)
+  const [showBriefing, setShowBriefing] = useState(false)
 
   // Report Generation State
   const [activeReport, setActiveReport] = useState<NationalReportOutput | null>(null)
@@ -129,7 +139,7 @@ export default function Dashboard() {
 
   // Initialize Admin Profile on First Load
   useEffect(() => {
-    if (currentUser && db) {
+    if (currentUser && db && mounted) {
       const adminRef = doc(db, "admin_users", currentUser.uid);
       setDocumentNonBlocking(adminRef, {
         uid: currentUser.uid,
@@ -138,10 +148,17 @@ export default function Dashboard() {
         lastSeen: new Date().toISOString(),
         role: "A to Z Administrator"
       }, { merge: true });
+      
+      // Show mission briefing for new sessions
+      const hasSeenBriefing = sessionStorage.getItem('a_to_z_briefing_seen');
+      if (!hasSeenBriefing) {
+        setShowBriefing(true);
+        sessionStorage.setItem('a_to_z_briefing_seen', 'true');
+      }
     }
-  }, [currentUser, db]);
+  }, [currentUser, db, mounted]);
 
-  // Handle Theme Changes (Visual side effect)
+  // Handle Theme Changes
   useEffect(() => {
     if (!mounted) return;
     const root = window.document.documentElement;
@@ -154,7 +171,7 @@ export default function Dashboard() {
     }
   }, [theme, mounted]);
 
-  // Load User Preferences from Firestore (A to Z persistence)
+  // Load User Preferences from Firestore
   const adminDocRef = useMemoFirebase(() => {
     if (!db || !currentUser) return null;
     return doc(db, "admin_users", currentUser.uid);
@@ -172,7 +189,7 @@ export default function Dashboard() {
     }
   }, [adminProfile]);
 
-  // Load Students from Firestore (Intelligence Node Directory)
+  // Load Students from Firestore
   const studentsQuery = useMemoFirebase(() => {
     if (!db) return null;
     return collection(db, "students");
@@ -180,7 +197,7 @@ export default function Dashboard() {
 
   const { data: dbStudents, isLoading: isDbLoading } = useCollection<Student>(studentsQuery);
 
-  // Auto-Sync Logic: If DB is empty and autoSync is on, seed data automatically
+  // Auto-Sync Logic
   useEffect(() => {
     if (mounted && !isDbLoading && dbStudents && dbStudents.length === 0 && autoSync && db && currentUser) {
       const mockData = generateMockStudents(20);
@@ -350,8 +367,8 @@ export default function Dashboard() {
                   <div className="h-[280px] overflow-y-auto pr-2 space-y-3 custom-scrollbar">
                     {MISSION_INDIA_OBJECTIVES.map((obj, i) => (
                       <div key={i} className="flex items-center gap-3 group">
-                        <div className="h-1.5 w-1.5 rounded-full bg-primary neon-glow shrink-0" />
-                        <span className="text-[11px] text-muted-foreground font-medium group-hover:text-foreground transition-colors">{obj}</span>
+                        {i < 10 ? <CheckCircle2 className="h-3.5 w-3.5 text-primary neon-glow shrink-0" /> : <div className="h-1.5 w-1.5 rounded-full bg-white/20 shrink-0" />}
+                        <span className={cn("text-[11px] font-medium transition-colors", i < 10 ? "text-foreground" : "text-muted-foreground group-hover:text-foreground")}>{obj}</span>
                       </div>
                     ))}
                   </div>
@@ -747,6 +764,35 @@ export default function Dashboard() {
             </div>
           </main>
         </SidebarInset>
+        
+        <Dialog open={showBriefing} onOpenChange={setShowBriefing}>
+          <DialogContent className="glass-card border-primary/20 sm:max-w-md">
+            <DialogHeader>
+              <div className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center mb-4 mx-auto neon-glow">
+                <ShieldCheck className="h-6 w-6 text-black" />
+              </div>
+              <DialogTitle className="text-center text-xl font-black uppercase tracking-widest italic">Mission Briefing</DialogTitle>
+              <DialogDescription className="text-center text-xs uppercase tracking-widest font-bold text-muted-foreground mt-2">
+                Secure Link Established | A to Z Initialized
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="p-4 bg-white/5 rounded-xl border border-white/10 space-y-3">
+                <div className="flex items-center gap-3">
+                  <AlertCircle className="h-4 w-4 text-primary" />
+                  <p className="text-[10px] font-bold uppercase tracking-widest">System Update: 40 Objectives Synced</p>
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  Welcome, Administrator. Your environment is now fully synchronized with India's 40 National Objectives. Every research node you monitor contributes to the digitization and growth of our educational infrastructure.
+                </p>
+              </div>
+              <Button onClick={() => setShowBriefing(false)} className="w-full bg-primary text-black font-bold uppercase tracking-widest text-[10px] h-12 neon-glow">
+                Acknowledge Protocol
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
         <Chatbot />
       </div>
     </SidebarProvider>
