@@ -7,7 +7,6 @@ import {
   BarChart3, 
   FileText, 
   Settings, 
-  Upload, 
   MoreVertical,
   LayoutDashboard,
   Target,
@@ -27,14 +26,8 @@ import {
   Fingerprint,
   Cpu,
   Sparkles,
-  Search,
   RefreshCcw,
-  Globe,
-  AlertCircle,
-  Network,
-  Radio,
-  Scan,
-  ShieldAlert
+  Network
 } from "lucide-react"
 import { generateMockStudents, type Student } from "@/lib/mock-data"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
@@ -115,6 +108,7 @@ export default function Dashboard() {
   const [filters, setFilters] = useState<GenerativeVoiceSearchOutput>({})
   const [searchQuery, setSearchQuery] = useState("")
   
+  // Local state for settings (synced with Firestore)
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('dark')
   const [autoSync, setAutoSync] = useState(true)
   const [neuralInsights, setNeuralInsights] = useState(true)
@@ -141,17 +135,12 @@ export default function Dashboard() {
         displayName: currentUser.displayName || "Research Admin",
         email: currentUser.email,
         lastSeen: new Date().toISOString(),
-        role: "A to Z Administrator",
-        theme,
-        autoSync,
-        neuralInsights,
-        language,
-        securityLevel
+        role: "A to Z Administrator"
       }, { merge: true });
     }
   }, [currentUser, db]);
 
-  // Handle Theme Changes
+  // Handle Theme Changes (Visual side effect)
   useEffect(() => {
     if (!mounted) return;
     const root = window.document.documentElement;
@@ -164,7 +153,7 @@ export default function Dashboard() {
     }
   }, [theme, mounted]);
 
-  // Load User Preferences from Firestore
+  // Load User Preferences from Firestore (A to Z persistence)
   const adminDocRef = useMemoFirebase(() => {
     if (!db || !currentUser) return null;
     return doc(db, "admin_users", currentUser.uid);
@@ -182,7 +171,7 @@ export default function Dashboard() {
     }
   }, [adminProfile]);
 
-  // Load Students from Firestore
+  // Load Students from Firestore (Intelligence Node Directory)
   const studentsQuery = useMemoFirebase(() => {
     if (!db) return null;
     return collection(db, "students");
@@ -190,7 +179,7 @@ export default function Dashboard() {
 
   const { data: dbStudents, isLoading: isDbLoading } = useCollection<Student>(studentsQuery);
 
-  // Auto-Sync Logic: If DB is empty and autoSync is on, seed data
+  // Auto-Sync Logic: If DB is empty and autoSync is on, seed data automatically
   useEffect(() => {
     if (mounted && !isDbLoading && dbStudents && dbStudents.length === 0 && autoSync && db && currentUser) {
       const mockData = generateMockStudents(20);
@@ -204,7 +193,7 @@ export default function Dashboard() {
       });
       toast({
         title: "A to Z Auto-Sync Complete",
-        description: "Restored intelligence nodes from secure cloud backup.",
+        description: "Restored mission-critical research nodes from secure cloud backup.",
       });
     }
   }, [mounted, isDbLoading, dbStudents, autoSync, db, currentUser, toast]);
@@ -475,7 +464,7 @@ export default function Dashboard() {
                  {!activeReport && !isGeneratingReport && (
                    <div className="py-20 flex flex-col items-center justify-center text-center space-y-4 border border-dashed border-white/10 rounded-2xl">
                      <div className="h-12 w-12 rounded-full bg-white/5 flex items-center justify-center">
-                       <AlertCircle className="h-6 w-6 text-muted-foreground" />
+                       <Activity className="h-6 w-6 text-muted-foreground" />
                      </div>
                      <p className="text-xs text-muted-foreground uppercase tracking-widest font-bold">No active reports generated. Initiate neural audit to begin.</p>
                    </div>
@@ -508,7 +497,7 @@ export default function Dashboard() {
                      </div>
                      <div className="bg-primary/10 p-3 rounded-xl border border-primary/20">
                         <p className="text-[10px] font-bold text-primary uppercase mb-1 flex items-center gap-2">
-                          <Activity className="h-3 w-3" /> Strategic Recommendation
+                          <Fingerprint className="h-3 w-3" /> Strategic Recommendation
                         </p>
                         <p className="text-[10px] text-muted-foreground font-medium">{activeReport.strategicRecommendation}</p>
                      </div>
