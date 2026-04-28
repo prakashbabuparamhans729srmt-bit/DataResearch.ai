@@ -110,6 +110,10 @@ const MISSION_INDIA_OBJECTIVES = [
   "40. Global research exchange link"
 ];
 
+/**
+ * @fileOverview The A to Z Intelligence Dashboard.
+ * Acting as the mission control for student research and national objectives.
+ */
 export default function Dashboard() {
   const [mounted, setMounted] = useState(false)
   const { firestore: db, user: currentUser, isUserLoading: loadingAuth } = useFirebase();
@@ -197,7 +201,7 @@ export default function Dashboard() {
 
   const { data: dbStudents, isLoading: isDbLoading } = useCollection<Student>(studentsQuery);
 
-  // Auto-Sync Logic
+  // Auto-Sync Logic: If database is empty and autoSync is enabled, provision nodes
   useEffect(() => {
     if (mounted && !isDbLoading && dbStudents && dbStudents.length === 0 && autoSync && db && currentUser) {
       const mockData = generateMockStudents(20);
