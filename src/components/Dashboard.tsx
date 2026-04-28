@@ -141,7 +141,12 @@ export default function Dashboard() {
         displayName: currentUser.displayName || "Research Admin",
         email: currentUser.email,
         lastSeen: new Date().toISOString(),
-        role: "A to Z Administrator"
+        role: "A to Z Administrator",
+        theme,
+        autoSync,
+        neuralInsights,
+        language,
+        securityLevel
       }, { merge: true });
     }
   }, [currentUser, db]);
@@ -199,7 +204,7 @@ export default function Dashboard() {
       });
       toast({
         title: "A to Z Auto-Sync Complete",
-        description: "Restored 20 intelligence nodes from secure cloud backup.",
+        description: "Restored intelligence nodes from secure cloud backup.",
       });
     }
   }, [mounted, isDbLoading, dbStudents, autoSync, db, currentUser, toast]);
