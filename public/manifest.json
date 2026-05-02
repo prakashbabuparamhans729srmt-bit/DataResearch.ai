@@ -1,12 +1,13 @@
 
 {
-  "name": "DataResearch.ai",
+  "name": "DataResearch.ai | Advanced Student Analytics",
   "short_name": "Research.AI",
   "description": "Professional A to Z student data research and analytics platform powered by AI.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#070707",
   "theme_color": "#07F1D6",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "https://images.unsplash.com/photo-1614853316476-de00d14cb1fc?q=80&w=192&h=192&auto=format&fit=crop",
@@ -21,6 +22,13 @@
       "purpose": "any maskable"
     }
   ],
-  "orientation": "portrait-primary",
-  "categories": ["education", "productivity", "business"]
+  "categories": ["education", "productivity", "utilities"],
+  "screenshots": [
+    {
+      "src": "https://images.unsplash.com/photo-1614853316476-de00d14cb1fc?q=80&w=1080&h=1920&auto=format&fit=crop",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "label": "Dashboard Interface"
+    }
+  ]
 }
