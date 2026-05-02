@@ -1,5 +1,6 @@
+
 {
-  "name": "DataResearch.ai | Advanced Student Analytics",
+  "name": "DataResearch.ai",
   "short_name": "Research.AI",
   "description": "Professional A to Z student data research and analytics platform powered by AI.",
   "start_url": "/",
@@ -19,5 +20,7 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "orientation": "portrait-primary",
+  "categories": ["education", "productivity", "business"]
 }
