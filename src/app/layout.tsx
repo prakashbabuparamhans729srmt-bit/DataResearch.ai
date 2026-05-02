@@ -3,10 +3,13 @@ import './globals.css';
 import { FirebaseClientProvider } from '@/firebase';
 import { Toaster } from '@/components/ui/toaster';
 
+/**
+ * @fileOverview Root Layout with PWA metadata for installation.
+ * Ensures the app looks and feels like a native application on all platforms.
+ */
 export const metadata: Metadata = {
   title: 'DataResearch.ai | Advanced Student Analytics',
   description: 'Professional A to Z student data research and analytics platform powered by AI.',
-  manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',

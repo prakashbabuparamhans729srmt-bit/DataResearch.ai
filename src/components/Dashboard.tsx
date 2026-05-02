@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
@@ -113,6 +112,7 @@ const MISSION_INDIA_OBJECTIVES = [
 /**
  * @fileOverview The A to Z Intelligence Dashboard.
  * Acting as the mission control for student research and national objectives.
+ * Integrated fully with Firebase for persistent cloud synchronization.
  */
 export default function Dashboard() {
   const [mounted, setMounted] = useState(false)

@@ -24,6 +24,7 @@ export default function manifest(): MetadataRoute.Manifest {
         src: 'https://images.unsplash.com/photo-1614853316476-de00d14cb1fc?q=80&w=512&h=512&auto=format&fit=crop',
         sizes: '512x512',
         type: 'image/png',
+        purpose: 'any',
       },
     ],
   };
