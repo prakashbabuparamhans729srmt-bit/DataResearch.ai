@@ -1,11 +1,10 @@
-
 {
-  "name": "DataResearch.ai",
+  "name": "DataResearch.ai | Advanced Student Analytics",
   "short_name": "Research.AI",
   "description": "Professional A to Z student data research and analytics platform powered by AI.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#030712",
+  "background_color": "#070707",
   "theme_color": "#07F1D6",
   "icons": [
     {
