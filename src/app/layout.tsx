@@ -48,7 +48,6 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <link rel="apple-touch-icon" href="https://images.unsplash.com/photo-1614853316476-de00d14cb1fc?q=80&w=192&h=192&auto=format&fit=crop" />
         <meta name="theme-color" content="#07F1D6" />
-        {/* Splash screen icons */}
         <link rel="icon" type="image/png" sizes="32x32" href="https://images.unsplash.com/photo-1614853316476-de00d14cb1fc?q=80&w=32&h=32&auto=format&fit=crop" />
         <link rel="icon" type="image/png" sizes="16x16" href="https://images.unsplash.com/photo-1614853316476-de00d14cb1fc?q=80&w=16&h=16&auto=format&fit=crop" />
       </head>
