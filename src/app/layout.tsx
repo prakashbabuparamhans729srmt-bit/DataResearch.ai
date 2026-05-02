@@ -5,7 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
   title: 'DataResearch.ai | Advanced Student Analytics',
-  description: 'Professional student data research and analytics platform powered by AI.',
+  description: 'Professional A to Z student data research and analytics platform powered by AI.',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
@@ -15,6 +15,9 @@ export const metadata: Metadata = {
   formatDetection: {
     telephone: false,
   },
+  applicationName: 'Research.AI',
+  authors: [{ name: 'A to Z Intelligence' }],
+  keywords: ['Student Analytics', 'Education AI', 'Research'],
 };
 
 export const viewport: Viewport = {
