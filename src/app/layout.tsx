@@ -4,16 +4,20 @@ import { FirebaseClientProvider } from '@/firebase';
 import { Toaster } from '@/components/ui/toaster';
 
 /**
- * @fileOverview Root Layout with PWA metadata for installation.
- * Ensures the app looks and feels like a native application on all platforms.
+ * @fileOverview Root Layout with PWA metadata for native-like installation.
+ * Ensures the app looks and feels like a native application on Mobile, Tablets, and Desktops.
  */
 export const metadata: Metadata = {
   title: 'DataResearch.ai | Advanced Student Analytics',
   description: 'Professional A to Z student data research and analytics platform powered by AI.',
+  manifest: '/manifest.webmanifest',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
     title: 'Research.AI',
+    startupImage: [
+      'https://images.unsplash.com/photo-1614853316476-de00d14cb1fc?q=80&w=512&h=512&auto=format&fit=crop',
+    ],
   },
   formatDetection: {
     telephone: false,
@@ -24,6 +28,8 @@ export const metadata: Metadata = {
   other: {
     'mobile-web-app-capable': 'yes',
     'apple-mobile-web-app-status-bar-style': 'black-translucent',
+    'msapplication-TileColor': '#07F1D6',
+    'msapplication-tap-highlight': 'no',
   }
 };
 
@@ -54,7 +60,7 @@ export default function RootLayout({
         <link rel="icon" type="image/png" sizes="32x32" href="https://images.unsplash.com/photo-1614853316476-de00d14cb1fc?q=80&w=32&h=32&auto=format&fit=crop" />
         <link rel="icon" type="image/png" sizes="16x16" href="https://images.unsplash.com/photo-1614853316476-de00d14cb1fc?q=80&w=16&h=16&auto=format&fit=crop" />
       </head>
-      <body className="font-body antialiased selection:bg-primary/30 overscroll-none">
+      <body className="font-body antialiased selection:bg-primary/30 overscroll-none overflow-x-hidden">
         <FirebaseClientProvider>
           {children}
           <Toaster />
